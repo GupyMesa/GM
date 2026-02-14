@@ -35,12 +35,25 @@ export const UsuariosModule = {
         this.aplicarFiltros();
     },
 
+    /**
+     * CADASTRO MANUAL COM TRAVA DE ID
+     */
     adicionarUsuario(usuario) {
         const lista = this.getUsuarios();
-        if (lista.some(u => u.id == usuario.id)) {
-            throw new Error(`O ID ${usuario.id} já está cadastrado!`);
+        
+        // Normaliza o ID para comparação (Remove espaços e garante string)
+        const idNovo = String(usuario.id).trim();
+
+        // TRAVA DE SEGURANÇA:
+        // Verifica se EXATAMENTE este ID já existe.
+        // Nota: Não verificamos nome, pois a mesma pessoa pode ter 2 IDs.
+        const idExiste = lista.some(u => String(u.id).trim() === idNovo);
+
+        if (idExiste) {
+            throw new Error(`O ID ${idNovo} já possui cadastro no sistema.`);
         }
-        lista.unshift(usuario);
+
+        lista.unshift(usuario); // Adiciona no topo da lista
         this.salvarTodos(lista);
     },
 
@@ -63,14 +76,10 @@ export const UsuariosModule = {
             return bateuTermo && bateuSituacao && bateuContrato && bateuFuncao;
         });
 
-        // Atualiza a Tabela
         renderizarTabelaUsuarios('conteudo-principal', listaFiltrada);
-
-        // Atualiza os Totais (Badges) na interface
         this.atualizarTotaisVisuais(listaFiltrada);
     },
 
-    // Calcula e exibe os totais na barra superior
     atualizarTotaisVisuais(lista) {
         const totais = {
             total: lista.length,
@@ -79,7 +88,6 @@ export const UsuariosModule = {
             ativos: lista.filter(u => u.situacao === 'ATIVO').length
         };
 
-        // Atualiza o HTML dos badges se eles existirem
         const elTotal = document.getElementById('badge-total');
         const elCLT = document.getElementById('badge-clt');
         const elTerceiros = document.getElementById('badge-terceiros');
@@ -102,14 +110,10 @@ export const UsuariosModule = {
             if (colunas.length < 5) { erros++; continue; }
 
             let contrato = colunas[2].trim().toUpperCase();
-            // Normalização: Se vier algo diferente, ou mapeia ou ignora.
-            // Aqui assumimos que se for PJ vira TERCEIROS, se for Estagio removemos ou mantemos?
-            // Pedido: "Não temos estagio". Se vier no CSV, vamos forçar TERCEIROS ou ignorar.
-            // Vou forçar a conversão de PJ -> TERCEIROS e manter CLT.
             if (contrato === 'PJ') contrato = 'TERCEIROS';
             
             const usuario = {
-                id: colunas[0].trim(),
+                id: colunas[0].trim(), // Remove espaços do ID
                 nome: colunas[1].trim(),
                 contrato: contrato,
                 situacao: colunas[3].trim().toUpperCase(),
@@ -119,10 +123,16 @@ export const UsuariosModule = {
         }
 
         const listaAtual = this.getUsuarios();
+        
+        // Na importação, se o ID já existe, atualizamos os dados (Upsert)
+        // Se for ID novo, adicionamos.
         novosUsuarios.forEach(novo => {
             const index = listaAtual.findIndex(u => u.id === novo.id);
-            if (index >= 0) listaAtual[index] = novo;
-            else listaAtual.push(novo);
+            if (index >= 0) {
+                listaAtual[index] = novo; // Atualiza cadastro existente
+            } else {
+                listaAtual.push(novo); // Cria novo ID
+            }
         });
 
         this.salvarTodos(listaAtual);
