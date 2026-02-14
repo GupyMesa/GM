@@ -1,27 +1,38 @@
 /**
  * CÉREBRO: AUTH ENGINE
- * Gerencia criptografia, reset de senhas e políticas de acesso.
+ * Gerencia criptografia, senhas padrão e permissões.
  */
 export const AuthEngine = {
     
-    SENHA_PADRAO: "gupy123",
+    CONSTANTES: {
+        SENHA_PADRAO: "gupy123",
+        SALT_ROUNDS: 10 // Para uso futuro com bcrypt
+    },
 
-    // Simula a criptografia (No futuro, isso será feito pelo banco Oracle/Postgres)
+    /**
+     * Gera um hash simulado para a senha (em produção usaremos bcrypt no backend)
+     */
     criptografarSenha(senhaPlana) {
-        // Em produção, isso seria um hash real (bcrypt). 
-        // Aqui retornamos um "hash simulado" para visualização.
-        return `enc_${btoa(senhaPlana)}`; 
+        // Simulação de hash para visualização
+        return `hash_${btoa(senhaPlana)}`; 
     },
 
-    // Verifica se o usuário está usando a senha padrão (Obriga troca)
-    verificarPrimeiroAcesso(senhaAtualCriptografada) {
-        const hashPadrao = this.criptografarSenha(this.SENHA_PADRAO);
-        return senhaAtualCriptografada === hashPadrao;
+    /**
+     * Verifica se a senha atual é a padrão, forçando a troca
+     */
+    ehSenhaPadrao(senhaCriptografada) {
+        const hashPadrao = this.criptografarSenha(this.CONSTANTES.SENHA_PADRAO);
+        return senhaCriptografada === hashPadrao;
     },
 
-    // Ação do Admin: Restaura a senha para o padrão
-    resetarSenhaUsuario(usuarioId) {
-        console.warn(`[AUDITORIA] Senha do usuário ${usuarioId} resetada pelo Admin.`);
-        return this.criptografarSenha(this.SENHA_PADRAO);
+    /**
+     * Retorna o objeto de senha resetada para salvar no banco
+     */
+    gerarPayloadResetSenha() {
+        return {
+            senha_hash: this.criptografarSenha(this.CONSTANTES.SENHA_PADRAO),
+            precisa_trocar_senha: true,
+            resetado_em: new Date().toISOString()
+        };
     }
 };
