@@ -4,10 +4,9 @@ export const UsuariosModule = {
     
     KEY_STORAGE: 'gupymesa_usuarios_v1',
     
-    // Estado atual dos filtros
     filtrosAtuais: {
         termo: '',
-        situacao: 'ATIVO', // Padrão: mostrar apenas ativos
+        situacao: 'ATIVO',
         contrato: 'TODOS',
         funcao: 'TODAS'
     },
@@ -23,7 +22,6 @@ export const UsuariosModule = {
         if (!localStorage.getItem(this.KEY_STORAGE)) {
             this.salvarTodos(this.dadosIniciais);
         }
-        // Aplica os filtros iniciais ao carregar
         this.aplicarFiltros();
     },
 
@@ -34,7 +32,7 @@ export const UsuariosModule = {
 
     salvarTodos(listaUsuarios) {
         localStorage.setItem(this.KEY_STORAGE, JSON.stringify(listaUsuarios));
-        this.aplicarFiltros(); // Atualiza a tela após salvar
+        this.aplicarFiltros();
     },
 
     adicionarUsuario(usuario) {
@@ -46,35 +44,49 @@ export const UsuariosModule = {
         this.salvarTodos(lista);
     },
 
-    // Função central de filtragem
     aplicarFiltros(novosFiltros = {}) {
-        // 1. Atualiza o estado dos filtros com o que veio de novo
         this.filtrosAtuais = { ...this.filtrosAtuais, ...novosFiltros };
         
         const listaCompleta = this.getUsuarios();
         const f = this.filtrosAtuais;
 
-        // 2. Filtra a lista
+        // Filtragem
         const listaFiltrada = listaCompleta.filter(user => {
-            // Filtro de Texto (Nome ou ID)
             const bateuTermo = !f.termo || 
                 user.nome.toLowerCase().includes(f.termo.toLowerCase()) || 
                 user.id.includes(f.termo);
 
-            // Filtro de Situação (Ativo/Inativo/Todos)
             const bateuSituacao = f.situacao === 'TODOS' || user.situacao === f.situacao;
-
-            // Filtro de Contrato
             const bateuContrato = f.contrato === 'TODOS' || user.contrato === f.contrato;
-
-            // Filtro de Função
             const bateuFuncao = f.funcao === 'TODAS' || user.funcao === f.funcao;
 
             return bateuTermo && bateuSituacao && bateuContrato && bateuFuncao;
         });
 
-        // 3. Renderiza
+        // Atualiza a Tabela
         renderizarTabelaUsuarios('conteudo-principal', listaFiltrada);
+
+        // Atualiza os Totais (Badges) na interface
+        this.atualizarTotaisVisuais(listaFiltrada);
+    },
+
+    // Calcula e exibe os totais na barra superior
+    atualizarTotaisVisuais(lista) {
+        const totais = {
+            total: lista.length,
+            clt: lista.filter(u => u.contrato === 'CLT').length,
+            terceiros: lista.filter(u => u.contrato === 'TERCEIROS').length,
+            ativos: lista.filter(u => u.situacao === 'ATIVO').length
+        };
+
+        // Atualiza o HTML dos badges se eles existirem
+        const elTotal = document.getElementById('badge-total');
+        const elCLT = document.getElementById('badge-clt');
+        const elTerceiros = document.getElementById('badge-terceiros');
+
+        if (elTotal) elTotal.innerText = totais.total;
+        if (elCLT) elCLT.innerText = totais.clt;
+        if (elTerceiros) elTerceiros.innerText = totais.terceiros;
     },
 
     processarCSV(textoCSV) {
@@ -90,8 +102,12 @@ export const UsuariosModule = {
             if (colunas.length < 5) { erros++; continue; }
 
             let contrato = colunas[2].trim().toUpperCase();
+            // Normalização: Se vier algo diferente, ou mapeia ou ignora.
+            // Aqui assumimos que se for PJ vira TERCEIROS, se for Estagio removemos ou mantemos?
+            // Pedido: "Não temos estagio". Se vier no CSV, vamos forçar TERCEIROS ou ignorar.
+            // Vou forçar a conversão de PJ -> TERCEIROS e manter CLT.
             if (contrato === 'PJ') contrato = 'TERCEIROS';
-
+            
             const usuario = {
                 id: colunas[0].trim(),
                 nome: colunas[1].trim(),
