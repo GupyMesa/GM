@@ -1,10 +1,6 @@
-import { AuthEngine } from '../engines/AuthEngine.js';
-
 export function abrirModalNovoUsuario() {
-    // Verifica se o modal já existe no DOM
     let modal = document.getElementById('modal-novo-usuario');
     
-    // Se não existir, cria o HTML do zero
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'modal-novo-usuario';
@@ -15,7 +11,7 @@ export function abrirModalNovoUsuario() {
                 <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
                     <div>
                         <h3 class="text-2xl font-black text-slate-800 tracking-tight">Novo Cadastro</h3>
-                        <p class="text-xs text-slate-500 font-medium mt-1">Preencha os dados conforme o padrão GupyMesa.</p>
+                        <p class="text-xs text-slate-500 font-medium mt-1">Preencha os dados (Padrão: Terceiros ou CLT)</p>
                     </div>
                     <button id="btn-fechar-modal" class="text-slate-300 hover:text-rose-500 transition p-1 rounded-full hover:bg-rose-50">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -51,7 +47,7 @@ export function abrirModalNovoUsuario() {
                             <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contrato</label>
                             <select name="contrato" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
                                 <option value="CLT">CLT</option>
-                                <option value="PJ">PJ</option>
+                                <option value="TERCEIROS">TERCEIROS</option>
                                 <option value="ESTAGIO">ESTÁGIO</option>
                             </select>
                         </div>
@@ -80,7 +76,6 @@ export function abrirModalNovoUsuario() {
         `;
         document.body.appendChild(modal);
 
-        // Lógica de Fechar
         const fechar = () => {
             modal.classList.add('opacity-0');
             modal.querySelector('#modal-content').classList.remove('scale-100');
@@ -89,24 +84,16 @@ export function abrirModalNovoUsuario() {
         };
 
         document.getElementById('btn-fechar-modal').onclick = fechar;
-        
-        // Fecha ao clicar fora
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) fechar();
-        });
+        modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
 
-        // Lógica de Submit
         document.getElementById('form-novo-usuario').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Aqui você conectará com o AuthEngine ou API
-            alert("Usuário cadastrado com sucesso! (Simulação)");
+            alert("Usuário TERCEIROS cadastrado com sucesso! (Simulação)");
             fechar();
         });
     }
 
-    // Lógica de Abrir com Animação
     modal.classList.remove('hidden');
-    // Pequeno delay para permitir a transição CSS funcionar
     setTimeout(() => {
         modal.classList.remove('opacity-0');
         const content = modal.querySelector('#modal-content');

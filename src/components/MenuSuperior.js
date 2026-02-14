@@ -1,12 +1,10 @@
 export function renderizarMenuSuperior(containerId) {
-    // ... o resto do código
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Detecta se estamos na pasta 'public' ou na raiz para ajustar os links
+    // Ajuste de caminhos para funcionar na raiz ou na pasta public
     const isSubFolder = window.location.pathname.includes('/public/');
     const prefix = isSubFolder ? '../' : './';
-    const publicPrefix = isSubFolder ? '' : 'public/';
 
     container.innerHTML = `
         <nav class="fixed top-0 z-50 w-full bg-slate-900 border-b border-slate-800 text-white shadow-2xl">
@@ -21,5 +19,6 @@ export function renderizarMenuSuperior(containerId) {
                 </div>
             </div>
         </nav>
-        <div class="h-16"></div> `;
+        <div class="h-16"></div>
+    `;
 }
