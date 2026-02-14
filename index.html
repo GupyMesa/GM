@@ -1,45 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GupyMesa v2 | Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
-</head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col">
+// Exemplo de como tratar a resposta no clique do botão
+if (dados.sucesso) {
+    const cargo = dados.usuario.cargo;
+    
+    // Guardamos o cargo para usar depois nas páginas
+    localStorage.setItem('gupymesa_usuario', JSON.stringify(dados.usuario));
 
-    <div id="header-main"></div>
-
-    <main class="flex-grow flex items-center justify-center px-4">
-        <div class="max-w-4xl w-full text-center">
-            <h1 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter italic">
-                CONTROLE DE <span class="text-indigo-500">PRODUTIVIDADE</span>
-            </h1>
-            <p class="text-slate-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-                Sistema modular de alta performance integrado com Oracle Cloud 200GB.
-            </p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <a href="public/gestao.html" class="group p-8 bg-slate-800 rounded-3xl border border-slate-700 hover:border-indigo-500 transition-all text-left">
-                    <h3 class="text-2xl font-bold mb-2 group-hover:text-indigo-400">Painel de Gestão</h3>
-                    <p class="text-slate-500 text-sm">Administração, importação de CSV e análise de equipe.</p>
-                </a>
-                <a href="#" class="group p-8 bg-slate-800 rounded-3xl border border-slate-700 hover:border-indigo-500 transition-all text-left opacity-50 cursor-not-allowed">
-                    <h3 class="text-2xl font-bold mb-2">Minha Área</h3>
-                    <p class="text-slate-500 text-sm">Visualização individual de performance (Em breve).</p>
-                </a>
-            </div>
-        </div>
-    </main>
-
-    <script type="module">
-        import { renderizarMenuSuperior } from './src/components/MenuSuperior.js';
-        document.addEventListener('DOMContentLoaded', () => {
-            renderizarMenuSuperior('header-main');
-        });
-    </script>
-</body>
-</html>
-"@ > index.html
+    if (cargo === 'Assistente') {
+        window.location.href = './public/minha_area.html'; // Ajuste o caminho se necessário
+    } else if (cargo === 'Gestora' || cargo === 'Auditora') {
+        window.location.href = './public/gestao.html';
+    }
+}
