@@ -2,13 +2,12 @@ export function renderizarMenuSuperior(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Ajuste de caminhos para funcionar na raiz ou na pasta public
     const isSubFolder = window.location.pathname.includes('/public/');
     const prefix = isSubFolder ? '../' : './';
 
     container.innerHTML = `
         <nav class="fixed top-0 z-50 w-full bg-slate-900 border-b border-slate-800 text-white shadow-2xl">
-            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="w-full px-6 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <img src="${prefix}assets/img/logo.png" alt="GupyMesa" class="h-8 w-auto">
                     <span class="font-black italic tracking-tighter text-2xl uppercase">Gupy<span class="text-indigo-500">Mesa</span></span>
