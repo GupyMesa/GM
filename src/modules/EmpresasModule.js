@@ -32,7 +32,6 @@ export const EmpresasModule = {
         this.aplicarFiltros();
     },
 
-    // Buscar uma empresa específica pelo ID
     obterEmpresa(id) {
         const lista = this.getEmpresas();
         return lista.find(e => String(e.id) === String(id));
@@ -50,7 +49,6 @@ export const EmpresasModule = {
         this.salvarTodos(lista);
     },
 
-    // Atualizar uma empresa existente
     atualizarEmpresa(empresaAtualizada) {
         const lista = this.getEmpresas();
         const index = lista.findIndex(e => String(e.id) === String(empresaAtualizada.id));
@@ -59,7 +57,6 @@ export const EmpresasModule = {
             throw new Error("Empresa não encontrada para edição.");
         }
 
-        // Mantém a posição original, apenas atualiza os dados
         lista[index] = empresaAtualizada;
         this.salvarTodos(lista);
     },
@@ -78,6 +75,17 @@ export const EmpresasModule = {
         });
 
         renderizarTabelaEmpresas('conteudo-principal', listaFiltrada);
+        
+        // --- ATUALIZA O CONTADOR VISUAL ---
+        this.atualizarTotaisVisuais(listaFiltrada);
+    },
+
+    // Calcula e exibe o total na badge
+    atualizarTotaisVisuais(lista) {
+        const elTotal = document.getElementById('badge-total-empresas');
+        if (elTotal) {
+            elTotal.innerText = lista.length;
+        }
     },
 
     processarCSV(textoCSV) {
@@ -89,8 +97,7 @@ export const EmpresasModule = {
             const linha = linhas[i].trim();
             if (!linha) continue;
             
-            // O CSV de empresas usa PONTO E VÍRGULA
-            const colunas = linha.split(';');
+            const colunas = linha.split(';'); // Ponto e vírgula
 
             if (colunas.length < 3) { erros++; continue; }
 
@@ -107,8 +114,8 @@ export const EmpresasModule = {
         const listaAtual = this.getEmpresas();
         novas.forEach(nova => {
             const index = listaAtual.findIndex(e => e.id === nova.id);
-            if (index >= 0) listaAtual[index] = nova; // Atualiza se existir
-            else listaAtual.push(nova); // Cria se não existir
+            if (index >= 0) listaAtual[index] = nova;
+            else listaAtual.push(nova);
         });
 
         this.salvarTodos(listaAtual);

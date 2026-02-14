@@ -1,7 +1,7 @@
 import { abrirModalNovoUsuario } from './ModalNovoUsuario.js';
 import { abrirModalImportacao } from './ModalImportacao.js';
 import { abrirModalNovaEmpresa } from './ModalNovaEmpresa.js';
-import { abrirModalImportacaoEmpresas } from './ModalImportacaoEmpresas.js'; // Novo
+import { abrirModalImportacaoEmpresas } from './ModalImportacaoEmpresas.js';
 import { UsuariosModule } from '../modules/UsuariosModule.js';
 import { EmpresasModule } from '../modules/EmpresasModule.js';
 import { GestaoManager } from '../managers/GestaoManager.js';
@@ -13,8 +13,9 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
     let htmlFiltros = '';
     let htmlTotais = '';
 
-    // --- HTML POR ABA ---
+    // --- CONFIGURAÇÃO POR ABA ---
     if (abaAtiva === 'usuarios') {
+        // Filtros de Usuários
         htmlFiltros = `
             <select id="filtro-situacao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
                 <option value="ATIVO" selected>⚡ Ativos</option>
@@ -33,6 +34,7 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
                 <option value="GESTORA">Gestora</option>
             </select>
         `;
+        // Totais de Usuários
         htmlTotais = `
             <div class="hidden xl:flex items-center gap-2 mr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                 <span>Total: <b class="text-slate-800" id="badge-total">0</b></span>
@@ -42,14 +44,22 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
             </div>
         `;
     } else if (abaAtiva === 'empresas') {
+        // Filtros de Empresas (Apenas título por enquanto)
         htmlFiltros = `
-            <div class="px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-lg">
+            <div class="px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-lg border border-slate-100">
                 Gerenciamento de Clientes
+            </div>
+        `;
+        
+        // --- NOVO: Totais de Empresas ---
+        htmlTotais = `
+            <div class="hidden xl:flex items-center gap-2 mr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                <span>Total Cadastrado: <b class="text-slate-800" id="badge-total-empresas">0</b></span>
             </div>
         `;
     }
 
-    // --- RENDERIZAÇÃO ---
+    // --- RENDERIZAÇÃO DO HTML ---
     container.innerHTML = `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-4 p-2 flex flex-col 2xl:flex-row items-center justify-between gap-4">
             
@@ -89,7 +99,7 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
         </div>
     `;
 
-    // --- EVENTOS ---
+    // --- RECONECTAR EVENTOS ---
     const inputBusca = document.getElementById('filtro-busca');
     if(inputBusca) {
         inputBusca.addEventListener('input', (e) => {
@@ -104,25 +114,22 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
         document.getElementById('filtro-funcao')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ funcao: e.target.value }));
     }
 
-    // BOTÃO NOVO (Inteligente)
     const btnNovo = document.getElementById('btn-novo-cadastro');
     if (btnNovo) {
         btnNovo.addEventListener('click', () => {
             if(abaAtiva === 'usuarios') abrirModalNovoUsuario();
-            if(abaAtiva === 'empresas') abrirModalNovaEmpresa(); // Chama modal vazio (Novo)
+            if(abaAtiva === 'empresas') abrirModalNovaEmpresa();
         });
     }
 
-    // BOTÃO IMPORTAR (Inteligente)
     const btnImportar = document.getElementById('btn-importar');
     if (btnImportar) {
         btnImportar.addEventListener('click', () => {
             if(abaAtiva === 'usuarios') abrirModalImportacao();
-            if(abaAtiva === 'empresas') abrirModalImportacaoEmpresas(); // Chama modal novo
+            if(abaAtiva === 'empresas') abrirModalImportacaoEmpresas();
         });
     }
 
-    // ABAS
     ['usuarios', 'empresas', 'metas', 'assertividade'].forEach(aba => {
         const btn = document.getElementById(`tab-${aba}`);
         if(btn) btn.addEventListener('click', () => GestaoManager.mudarAba(aba));
@@ -135,14 +142,3 @@ function botaoTab(id, label, ativo = false) {
         : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-200/50';
     return `<button id="tab-${id}" class="px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wide transition-all ${css}">${label}</button>`;
 }
-
-// --- FUNÇÃO GLOBAL DE EDIÇÃO DE EMPRESA ---
-// Precisa estar no escopo global para o onclick da tabela funcionar
-window.editarEmpresa = (id) => {
-    const empresa = EmpresasModule.obterEmpresa(id);
-    if (empresa) {
-        abrirModalNovaEmpresa(empresa); // Chama modal com dados (Edição)
-    } else {
-        alert("Erro: Empresa não encontrada.");
-    }
-};
