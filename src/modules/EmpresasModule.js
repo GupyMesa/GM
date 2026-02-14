@@ -8,7 +8,6 @@ export const EmpresasModule = {
         termo: ''
     },
 
-    // Dados iniciais de exemplo (Baseado no seu CSV)
     dadosIniciais: [
         { id: "56467", nome: "3778", subdominio: "3778inc", data_entrada: "", obs: "Desativada" },
         { id: "40368", nome: "4MK Solutions", subdominio: "4MK", data_entrada: "", obs: "" },
@@ -33,6 +32,12 @@ export const EmpresasModule = {
         this.aplicarFiltros();
     },
 
+    // Buscar uma empresa específica pelo ID
+    obterEmpresa(id) {
+        const lista = this.getEmpresas();
+        return lista.find(e => String(e.id) === String(id));
+    },
+
     adicionarEmpresa(empresa) {
         const lista = this.getEmpresas();
         const idNovo = String(empresa.id).trim();
@@ -42,6 +47,20 @@ export const EmpresasModule = {
         }
 
         lista.unshift(empresa);
+        this.salvarTodos(lista);
+    },
+
+    // Atualizar uma empresa existente
+    atualizarEmpresa(empresaAtualizada) {
+        const lista = this.getEmpresas();
+        const index = lista.findIndex(e => String(e.id) === String(empresaAtualizada.id));
+
+        if (index === -1) {
+            throw new Error("Empresa não encontrada para edição.");
+        }
+
+        // Mantém a posição original, apenas atualiza os dados
+        lista[index] = empresaAtualizada;
         this.salvarTodos(lista);
     },
 
@@ -59,7 +78,6 @@ export const EmpresasModule = {
         });
 
         renderizarTabelaEmpresas('conteudo-principal', listaFiltrada);
-        // Aqui poderíamos atualizar totais específicos de empresas se necessário
     },
 
     processarCSV(textoCSV) {
@@ -71,7 +89,7 @@ export const EmpresasModule = {
             const linha = linhas[i].trim();
             if (!linha) continue;
             
-            // IMPORTANTE: O CSV de empresas usa ponto e vírgula (;)
+            // O CSV de empresas usa PONTO E VÍRGULA
             const colunas = linha.split(';');
 
             if (colunas.length < 3) { erros++; continue; }
@@ -89,8 +107,8 @@ export const EmpresasModule = {
         const listaAtual = this.getEmpresas();
         novas.forEach(nova => {
             const index = listaAtual.findIndex(e => e.id === nova.id);
-            if (index >= 0) listaAtual[index] = nova;
-            else listaAtual.push(nova);
+            if (index >= 0) listaAtual[index] = nova; // Atualiza se existir
+            else listaAtual.push(nova); // Cria se não existir
         });
 
         this.salvarTodos(listaAtual);

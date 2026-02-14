@@ -18,9 +18,9 @@ export function renderizarTabelaEmpresas(containerId, dadosLista = []) {
             <td class="py-3 px-4 text-sm text-indigo-600 font-medium">${emp.subdominio}</td>
             <td class="py-3 px-4 text-xs text-slate-500">${emp.data_entrada || '-'}</td>
             <td class="py-3 px-4 text-xs text-slate-400 italic max-w-xs truncate" title="${emp.obs}">${emp.obs || '-'}</td>
-            <td class="py-3 px-4 text-right">
-                <button class="text-slate-300 hover:text-indigo-600 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <td class="py-3 px-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="window.editarEmpresa('${emp.id}')" class="text-slate-400 hover:text-indigo-600 transition p-2 hover:bg-indigo-50 rounded-lg" title="Editar Empresa">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 </button>
             </td>
         </tr>

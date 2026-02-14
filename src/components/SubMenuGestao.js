@@ -1,33 +1,32 @@
 import { abrirModalNovoUsuario } from './ModalNovoUsuario.js';
-import { abrirModalNovaEmpresa } from './ModalNovaEmpresa.js'; // Importar
 import { abrirModalImportacao } from './ModalImportacao.js';
+import { abrirModalNovaEmpresa } from './ModalNovaEmpresa.js';
+import { abrirModalImportacaoEmpresas } from './ModalImportacaoEmpresas.js'; // Novo
 import { UsuariosModule } from '../modules/UsuariosModule.js';
-import { EmpresasModule } from '../modules/EmpresasModule.js'; // Importar
-import { GestaoManager } from '../managers/GestaoManager.js'; // Importar Manager
+import { EmpresasModule } from '../modules/EmpresasModule.js';
+import { GestaoManager } from '../managers/GestaoManager.js';
 
 export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // HTML BASE (Layout Full Width)
     let htmlFiltros = '';
     let htmlTotais = '';
 
-    // LÓGICA DE CONTEÚDO BASEADO NA ABA
+    // --- HTML POR ABA ---
     if (abaAtiva === 'usuarios') {
-        // --- FILTROS DE USUÁRIOS ---
         htmlFiltros = `
-            <select id="filtro-situacao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer">
+            <select id="filtro-situacao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
                 <option value="ATIVO" selected>⚡ Ativos</option>
                 <option value="INATIVO">💤 Inativos</option>
                 <option value="TODOS">Todos</option>
             </select>
-            <select id="filtro-contrato" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer">
+            <select id="filtro-contrato" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
                 <option value="TODOS" selected>📄 Contratos</option>
                 <option value="CLT">CLT</option>
                 <option value="TERCEIROS">Terceiros</option>
             </select>
-            <select id="filtro-funcao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer">
+            <select id="filtro-funcao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
                 <option value="TODAS" selected>💼 Funções</option>
                 <option value="ASSISTENTE">Assistente</option>
                 <option value="AUDITORA">Auditora</option>
@@ -43,16 +42,14 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
             </div>
         `;
     } else if (abaAtiva === 'empresas') {
-        // --- FILTROS DE EMPRESAS (Apenas Busca por enquanto) ---
         htmlFiltros = `
-            <div class="px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <div class="px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-lg">
                 Gerenciamento de Clientes
             </div>
         `;
-        // Sem totais específicos complexos por enquanto
-        htmlTotais = ''; 
     }
 
+    // --- RENDERIZAÇÃO ---
     container.innerHTML = `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-4 p-2 flex flex-col 2xl:flex-row items-center justify-between gap-4">
             
@@ -66,9 +63,7 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
                 </div>
 
                 <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
-
                 ${htmlFiltros}
-
                 <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
                 <button id="btn-novo-cadastro" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 whitespace-nowrap">
@@ -94,9 +89,7 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
         </div>
     `;
 
-    // --- EVENTOS (Reanexar listeners) ---
-    
-    // 1. Busca Universal (Funciona para ambos)
+    // --- EVENTOS ---
     const inputBusca = document.getElementById('filtro-busca');
     if(inputBusca) {
         inputBusca.addEventListener('input', (e) => {
@@ -105,47 +98,34 @@ export function renderizarSubMenuGestao(containerId, abaAtiva = 'usuarios') {
         });
     }
 
-    // 2. Filtros Específicos de Usuário
     if (abaAtiva === 'usuarios') {
         document.getElementById('filtro-situacao')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ situacao: e.target.value }));
         document.getElementById('filtro-contrato')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ contrato: e.target.value }));
         document.getElementById('filtro-funcao')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ funcao: e.target.value }));
     }
 
-    // 3. Botão Novo (Dinâmico)
+    // BOTÃO NOVO (Inteligente)
     const btnNovo = document.getElementById('btn-novo-cadastro');
     if (btnNovo) {
         btnNovo.addEventListener('click', () => {
             if(abaAtiva === 'usuarios') abrirModalNovoUsuario();
-            if(abaAtiva === 'empresas') abrirModalNovaEmpresa();
+            if(abaAtiva === 'empresas') abrirModalNovaEmpresa(); // Chama modal vazio (Novo)
         });
     }
 
-    // 4. Botão Importar (Por enquanto aponta para o de usuário ou podemos criar um genérico)
+    // BOTÃO IMPORTAR (Inteligente)
     const btnImportar = document.getElementById('btn-importar');
     if (btnImportar) {
         btnImportar.addEventListener('click', () => {
             if(abaAtiva === 'usuarios') abrirModalImportacao();
-            if(abaAtiva === 'empresas') {
-                // Aqui você pode criar um ModalImportacaoEmpresas.js se quiser
-                // Por hora, vou chamar o mesmo modal mas alertar que precisa lógica especifica
-                const texto = prompt("Cole o CSV de Empresas aqui (ID;Nome;Sub;Data;Obs):");
-                if(texto) {
-                    const res = EmpresasModule.processarCSV(texto);
-                    alert(`Importado: ${res.total} empresas.`);
-                }
-            }
+            if(abaAtiva === 'empresas') abrirModalImportacaoEmpresas(); // Chama modal novo
         });
     }
 
-    // 5. Eventos das Abas (Chama o GestaoManager)
+    // ABAS
     ['usuarios', 'empresas', 'metas', 'assertividade'].forEach(aba => {
         const btn = document.getElementById(`tab-${aba}`);
-        if(btn) {
-            btn.addEventListener('click', () => {
-                GestaoManager.mudarAba(aba);
-            });
-        }
+        if(btn) btn.addEventListener('click', () => GestaoManager.mudarAba(aba));
     });
 }
 
@@ -155,3 +135,14 @@ function botaoTab(id, label, ativo = false) {
         : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-200/50';
     return `<button id="tab-${id}" class="px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wide transition-all ${css}">${label}</button>`;
 }
+
+// --- FUNÇÃO GLOBAL DE EDIÇÃO DE EMPRESA ---
+// Precisa estar no escopo global para o onclick da tabela funcionar
+window.editarEmpresa = (id) => {
+    const empresa = EmpresasModule.obterEmpresa(id);
+    if (empresa) {
+        abrirModalNovaEmpresa(empresa); // Chama modal com dados (Edição)
+    } else {
+        alert("Erro: Empresa não encontrada.");
+    }
+};
