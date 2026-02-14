@@ -1,19 +1,23 @@
+import { UsuariosModule } from '../modules/UsuariosModule.js';
+
 export function abrirModalNovoUsuario() {
+    // Verifica se o modal já existe no DOM para não criar duplicado
     let modal = document.getElementById('modal-novo-usuario');
     
+    // Se não existir, cria o HTML do zero
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'modal-novo-usuario';
         modal.className = 'fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity opacity-0';
         
         modal.innerHTML = `
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all scale-95 opacity-0" id="modal-content-novo">
                 <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
                     <div>
                         <h3 class="text-2xl font-black text-slate-800 tracking-tight">Novo Cadastro</h3>
                         <p class="text-xs text-slate-500 font-medium mt-1">Preencha os dados (Padrão: Terceiros ou CLT)</p>
                     </div>
-                    <button id="btn-fechar-modal" class="text-slate-300 hover:text-rose-500 transition p-1 rounded-full hover:bg-rose-50">
+                    <button id="btn-fechar-modal-novo" class="text-slate-300 hover:text-rose-500 transition p-1 rounded-full hover:bg-rose-50">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                     </button>
                 </div>
@@ -76,27 +80,55 @@ export function abrirModalNovoUsuario() {
         `;
         document.body.appendChild(modal);
 
+        // Lógica de Fechar
         const fechar = () => {
             modal.classList.add('opacity-0');
-            modal.querySelector('#modal-content').classList.remove('scale-100');
-            modal.querySelector('#modal-content').classList.add('scale-95');
+            modal.querySelector('#modal-content-novo').classList.remove('scale-100');
+            modal.querySelector('#modal-content-novo').classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 200);
         };
 
-        document.getElementById('btn-fechar-modal').onclick = fechar;
-        modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
+        document.getElementById('btn-fechar-modal-novo').onclick = fechar;
+        
+        // Fecha ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) fechar();
+        });
 
+        // Lógica de Submit (Salvar no UsuariosModule)
         document.getElementById('form-novo-usuario').addEventListener('submit', (e) => {
             e.preventDefault();
-            alert("Usuário TERCEIROS cadastrado com sucesso! (Simulação)");
-            fechar();
+            
+            const formData = new FormData(e.target);
+            
+            const novoUsuario = {
+                id: formData.get('id_assistente'),
+                nome: formData.get('nome_assist'),
+                contrato: formData.get('contrato'),
+                situacao: formData.get('situacao'),
+                funcao: formData.get('funcao')
+            };
+
+            try {
+                // Chama o módulo para salvar
+                UsuariosModule.adicionarUsuario(novoUsuario);
+                
+                // Limpa o form e fecha
+                e.target.reset();
+                fechar();
+                alert(`Usuário ${novoUsuario.nome} cadastrado com sucesso!`);
+                
+            } catch (erro) {
+                alert("Erro ao cadastrar: " + erro.message);
+            }
         });
     }
 
+    // Lógica de Abrir com Animação
     modal.classList.remove('hidden');
     setTimeout(() => {
         modal.classList.remove('opacity-0');
-        const content = modal.querySelector('#modal-content');
+        const content = modal.querySelector('#modal-content-novo');
         content.classList.remove('scale-95', 'opacity-0');
         content.classList.add('scale-100');
     }, 10);
