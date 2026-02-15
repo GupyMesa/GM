@@ -13,43 +13,153 @@ export const ModalImportacao = {
             modal.innerHTML = `
                 <div class="glass-modal">
                     <div class="modal-header">
-                        <h3>Importar em Massa (CSV)</h3>
+                        <h3>Importar Equipe (CSV)</h3>
                         <button class="btn-close">&times;</button>
                     </div>
-                    <div class="upload-area">
+                    <div class="upload-area" id="drop-area">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <p>Arraste seu arquivo aqui ou clique para selecionar</p>
+                        <p>Clique para selecionar o arquivo <b>.csv</b></p>
+                        <p class="file-name" style="color:#32d74b; font-size:0.8rem; margin-top:5px; min-height:1rem"></p>
                         <input type="file" accept=".csv" hidden>
                     </div>
+                    
+                    <div class="status-box" style="display:none; margin-top:15px; font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px;"></div>
+
                     <div class="modal-actions">
                         <button class="btn-cancel">Cancelar</button>
+                        <button class="btn-importar" disabled>Importar Agora</button>
                     </div>
                 </div>
+                
                 <style>
-                    /* Reutiliza estilos do modal anterior */
-                    .upload-area {
-                        border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px;
-                        padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s;
-                    }
+                    /* Estilos reutilizados */
+                    .upload-area { border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.2s; }
                     .upload-area:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.02); }
-                    .upload-area p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-top: 15px; }
+                    .glass-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+                    .glass-modal-overlay.visible { opacity: 1; pointer-events: auto; }
+                    .glass-modal { background: #151515; border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+                    .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; color:#fff; }
+                    .btn-close { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+                    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+                    .btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 12px; cursor: pointer; }
+                    .btn-importar { background: #fff; border: none; color: #000; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; opacity: 0.5; pointer-events: none; }
+                    .btn-importar:not([disabled]) { opacity: 1; pointer-events: auto; }
                 </style>
             `;
             container.appendChild(modal);
 
-            const close = () => modal.classList.remove('visible');
+            // Elementos
+            const dropArea = modal.querySelector('#drop-area');
+            const fileInput = modal.querySelector('input[type="file"]');
+            const fileNameDisplay = modal.querySelector('.file-name');
+            const btnImportar = modal.querySelector('.btn-importar');
+            const statusBox = modal.querySelector('.status-box');
+            let fileToUpload = null;
+
+            // Handlers
+            const resetModal = () => {
+                fileToUpload = null;
+                fileInput.value = '';
+                fileNameDisplay.textContent = '';
+                statusBox.style.display = 'none';
+                btnImportar.setAttribute('disabled', true);
+                btnImportar.textContent = 'Importar Agora';
+            };
+
+            const close = () => {
+                modal.classList.remove('visible');
+                setTimeout(resetModal, 300);
+            };
+
+            // Eventos UI
             modal.querySelector('.btn-close').addEventListener('click', close);
             modal.querySelector('.btn-cancel').addEventListener('click', close);
             
-            const uploadArea = modal.querySelector('.upload-area');
-            uploadArea.addEventListener('click', () => modal.querySelector('input').click());
-            modal.querySelector('input').addEventListener('change', () => {
-                alert('Arquivo selecionado! Processamento em breve.');
-                close();
+            dropArea.addEventListener('click', () => fileInput.click());
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    fileToUpload = e.target.files[0];
+                    fileNameDisplay.textContent = fileToUpload.name;
+                    btnImportar.removeAttribute('disabled');
+                }
+            });
+
+            // LÓGICA DE IMPORTAÇÃO
+            btnImportar.addEventListener('click', async () => {
+                if (!fileToUpload) return;
+
+                btnImportar.textContent = 'Processando...';
+                btnImportar.setAttribute('disabled', true);
+                statusBox.style.display = 'block';
+                statusBox.textContent = 'Lendo arquivo...';
+
+                try {
+                    const text = await fileToUpload.text();
+                    const lines = text.split('\n');
+                    const novosUsuarios = [];
+                    const idsVistos = new Set();
+
+                    // Parse CSV Client-Side
+                    // Pula header (i=1)
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+                        const cols = line.split(',');
+                        
+                        if (cols.length >= 5) {
+                            const id = parseInt(cols[0].trim());
+                            if (!isNaN(id) && !idsVistos.has(id)) {
+                                novosUsuarios.push({
+                                    id: id,
+                                    nome: cols[1].trim(),
+                                    contrato: cols[2].trim(),
+                                    status: cols[3].trim(),
+                                    cargo: cols[4].trim(),
+                                    senha: 'gupy123'
+                                });
+                                idsVistos.add(id);
+                            }
+                        }
+                    }
+
+                    if (novosUsuarios.length === 0) {
+                        throw new Error("Nenhum dado válido encontrado no CSV.");
+                    }
+
+                    statusBox.textContent = `Enviando ${novosUsuarios.length} registros...`;
+
+                    // Envia para API
+                    const response = await fetch('/api/usuarios/import', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(novosUsuarios)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        statusBox.style.color = '#32d74b';
+                        statusBox.textContent = result.mensagem;
+                        setTimeout(() => {
+                            close();
+                            // Recarrega a tabela se estiver no módulo de usuários
+                            window.location.reload(); 
+                        }, 2000);
+                    } else {
+                        throw new Error(result.mensagem || 'Erro no servidor');
+                    }
+
+                } catch (error) {
+                    statusBox.style.color = '#ff453a';
+                    statusBox.textContent = error.message;
+                    btnImportar.textContent = 'Tentar Novamente';
+                    btnImportar.removeAttribute('disabled');
+                }
             });
         }
 
