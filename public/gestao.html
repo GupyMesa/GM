@@ -13,6 +13,7 @@
             --text-main: #ffffff;
             --accent: #ffffff;
         }
+
         body {
             margin: 0; padding: 0;
             font-family: 'Inter', sans-serif;
@@ -22,26 +23,60 @@
             color: var(--text-main);
             overflow-x: hidden;
         }
-        #app { padding: 20px; max-width: 1400px; margin: 0 auto; animation: fadeIn 0.8s ease-out; }
-        
+
+        /* CORREÇÃO DO OVERLAP: Espaço para o Menu Fixo */
+        #app {
+            padding: 100px 20px 20px 20px; /* Topo aumentado para 100px */
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-out;
+        }
+
         /* Layout */
-        #menu-superior { margin-bottom: 20px; z-index: 100; position: relative; }
-        #submenu-gestao { margin-bottom: 30px; z-index: 90; position: relative; }
-        #conteudo-principal { position: relative; z-index: 1; min-height: 400px; }
-        
+        #menu-superior {
+            /* O menu é fixed no componente, então aqui garantimos que ele fique acima de tudo */
+            position: relative; 
+            z-index: 1000;
+        }
+
+        #submenu-gestao {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 900;
+        }
+
+        #conteudo-principal {
+            position: relative;
+            z-index: 1;
+            min-height: 400px;
+        }
+
         /* Modais */
-        #modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none; }
+        #modal-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999; pointer-events: none;
+        }
         #modal-container > * { pointer-events: auto; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
+
     <div id="app">
         <div id="menu-superior"></div>
+        
         <div id="submenu-gestao"></div>
+        
         <div id="conteudo-principal"></div>
     </div>
+
     <div id="modal-container"></div>
 
     <script type="module">
