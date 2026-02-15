@@ -1,28 +1,19 @@
-export class AuthEngine {
-    static async login(id, senha) {
-        console.log('🔄 Iniciando login para ID:', id);
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, senha })
-            });
+// src/engines/AuthEngine.js
+class AuthEngine {
+    // ... métodos de login existentes ...
 
-            if (!response.ok) throw new Error('Erro de conexão com servidor');
+    static logout() {
+        console.log("👋 Encerrando sessão...");
+        localStorage.removeItem('gupymesa_user');
+        window.location.href = '/index.html';
+    }
 
-            const data = await response.json();
-            
-            if (data.sucesso) {
-                console.log('✅ Login autorizado!');
-                localStorage.setItem('usuario_logado', JSON.stringify(data.usuario));
-                window.location.href = 'public/gestao.html';
-            } else {
-                console.warn('❌ Login negado:', data.mensagem);
-                alert(data.mensagem || 'ID ou Senha incorretos.');
-            }
-        } catch (error) {
-            console.error('🔥 Erro Crítico:', error);
-            alert('Erro ao conectar. Tente novamente.');
+    static checkAccess() {
+        const user = localStorage.getItem('gupymesa_user');
+        if (!user) {
+            window.location.href = '/index.html';
         }
+        return JSON.parse(user);
     }
 }
+export default AuthEngine;
