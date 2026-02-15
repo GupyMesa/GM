@@ -6,24 +6,41 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.'));
 
-// Configuração Inteligente: Tenta usar Variável de Ambiente, se não tiver, usa o arquivo
-const bqConfig = process.env.GOOGLE_CREDENTIALS 
-    ? {
-        projectId: process.env.GOOGLE_PROJECT_ID,
-        credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
-      }
-    : {
-        keyFilename: path.join(__dirname, 'credentials.json'),
-        projectId: 'gupymesa-487420'
-      };
-
-const bq = new BigQuery(bqConfig);
+// Configuração com Localização Forçada
+let bq;
+try {
+    const bqConfig = process.env.GOOGLE_CREDENTIALS 
+        ? {
+            projectId: process.env.GOOGLE_PROJECT_ID,
+            credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+            location: 'southamerica-east1' // <--- Força a busca em São Paulo
+          }
+        : {
+            keyFilename: path.join(__dirname, 'credentials.json'),
+            projectId: 'gupymesa-487420',
+            location: 'southamerica-east1'
+          };
+    bq = new BigQuery(bqConfig);
+    console.log('✅ BigQuery configurado para São Paulo.');
+} catch (e) {
+    console.error('❌ Erro na config:', e.message);
+}
 
 app.post('/api/login', async (req, res) => {
     const { id, senha } = req.body;
     try {
-        const query = `SELECT id, nome, cargo FROM \`gupymesa-487420.gupymesa.usuarios\` WHERE id = @id AND senha = @senha LIMIT 1`;
-        const options = { query, params: { id: parseInt(id), senha: senha } };
+        const query = `
+            SELECT id, nome, cargo 
+            FROM \`gupymesa-487420.gupymesa.usuarios\` 
+            WHERE id = @id AND senha = @senha 
+            LIMIT 1`;
+
+        const options = {
+            query: query,
+            location: 'southamerica-east1', // <--- Garante a localização na consulta
+            params: { id: parseInt(id), senha: senha }
+        };
+
         const [rows] = await bq.query(options);
 
         if (rows.length > 0) {
@@ -32,8 +49,8 @@ app.post('/api/login', async (req, res) => {
             res.status(401).json({ sucesso: false, mensagem: 'ID ou Senha incorretos' });
         }
     } catch (error) {
-        console.error('Erro no BigQuery:', error);
-        res.status(500).json({ sucesso: false, mensagem: 'Erro interno no servidor' });
+        console.error('🔥 ERRO REAL:', error.message);
+        res.status(500).json({ sucesso: false, mensagem: error.message });
     }
 });
 
