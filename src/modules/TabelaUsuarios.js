@@ -2,7 +2,7 @@
 import { AuthEngine } from '../engines/AuthEngine.js';
 
 /**
- * Renderiza a tabela de usuários com estilo Glassmorphism 2026
+ * Renderiza a listagem de usuários com design Glassmorphism
  */
 export const renderTabelaUsuarios = (containerId, usuarios) => {
     const container = document.getElementById(containerId);
@@ -13,10 +13,10 @@ export const renderTabelaUsuarios = (containerId, usuarios) => {
             <div class="table-header">
                 <div>
                     <h2 class="title-main">Gestão de Assistentes</h2>
-                    <p class="subtitle">Controle de produtividade e acesso</p>
+                    <p class="subtitle">Equipe ativa no sistema</p>
                 </div>
                 <button class="btn-add-modern" onclick="alert('Funcionalidade em desenvolvimento')">
-                    <span class="icon">+</span> Novo Usuário
+                    + Adicionar Novo
                 </button>
             </div>
             
@@ -25,10 +25,9 @@ export const renderTabelaUsuarios = (containerId, usuarios) => {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Nome do Assistente</th>
-                            <th>Cargo / Função</th>
+                            <th>Nome Completo</th>
+                            <th>Função / Cargo</th>
                             <th>Status</th>
-                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,9 +42,6 @@ export const renderTabelaUsuarios = (containerId, usuarios) => {
                                         Ativo
                                     </div>
                                 </td>
-                                <td>
-                                    <button class="btn-edit-minimal">Editar</button>
-                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -56,88 +52,72 @@ export const renderTabelaUsuarios = (containerId, usuarios) => {
         <style>
             .glass-container {
                 background: rgba(255, 255, 255, 0.03);
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 30px;
-                padding: 30px;
+                padding: 40px;
                 margin: 120px auto 40px;
                 width: 90%;
                 max-width: 1100px;
                 color: #ffffff;
-                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
             }
 
             .table-header {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 30px;
+                align-items: center;
+                margin-bottom: 35px;
             }
 
-            .title-main { font-size: 1.8rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-            .subtitle { color: rgba(255, 255, 255, 0.5); margin: 5px 0 0 0; font-size: 0.9rem; }
+            .title-main { font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+            .subtitle { color: rgba(255, 255, 255, 0.4); margin: 5px 0 0 0; font-size: 0.9rem; }
 
             .btn-add-modern {
                 background: #ffffff;
-                color: #000000;
+                color: #000;
                 border: none;
-                padding: 12px 24px;
-                border-radius: 16px;
-                font-weight: 600;
+                padding: 12px 25px;
+                border-radius: 15px;
+                font-weight: 700;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 8px;
+                transition: transform 0.2s ease;
             }
 
-            .btn-add-modern:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1); }
+            .btn-add-modern:hover { transform: scale(1.05); }
 
             .table-scroll { overflow-x: auto; }
-            .glass-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+            .glass-table { width: 100%; border-collapse: collapse; }
 
             .glass-table th {
                 text-align: left;
-                padding: 18px;
-                color: rgba(255, 255, 255, 0.4);
-                font-size: 0.75rem;
+                padding: 20px;
+                color: rgba(255, 255, 255, 0.3);
+                font-size: 0.8rem;
                 text-transform: uppercase;
-                letter-spacing: 1px;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
 
-            .table-row { transition: background 0.2s ease; }
-            .table-row:hover { background: rgba(255, 255, 255, 0.02); }
+            .table-row { transition: background 0.3s ease; }
+            .table-row:hover { background: rgba(255, 255, 255, 0.03); }
 
-            .glass-table td { padding: 20px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+            .glass-table td { padding: 22px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 
-            .col-id { color: rgba(255, 255, 255, 0.3); font-family: monospace; }
-            .col-name { font-weight: 600; font-size: 1rem; }
+            .col-id { color: rgba(255, 255, 255, 0.2); font-family: 'Courier New', monospace; }
+            .col-name { font-weight: 600; font-size: 1.05rem; }
 
             .role-badge {
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.07);
                 padding: 6px 14px;
                 border-radius: 12px;
-                font-size: 0.8rem;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.8);
             }
 
-            .status-wrapper { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
-            .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-            .status-dot.online { background: #32d74b; box-shadow: 0 0 10px #32d74b; }
-
-            .btn-edit-minimal {
-                background: transparent;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: #fff;
-                padding: 6px 12px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 0.8rem;
-            }
-
-            .btn-edit-minimal:hover { background: #fff; color: #000; }
+            .status-wrapper { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+            .status-dot { width: 9px; height: 9px; border-radius: 50%; }
+            .status-dot.online { background: #32d74b; box-shadow: 0 0 12px #32d74b; }
         </style>
     `;
     

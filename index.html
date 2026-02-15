@@ -3,169 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GupyMesa - Login</title>
+    <title>GupyMesa - Acesso Restrito</title>
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #050505;
-            --glass-white: rgba(255, 255, 255, 0.05);
-            --text-main: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.5);
-        }
+        :root { --bg: #050505; --white: #ffffff; }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 50% -20%, #1a1a2e 0%, #050505 100%),
-                radial-gradient(circle at 0% 100%, #0a0a1a 0%, transparent 40%);
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #050505 100%);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-main);
-            overflow: hidden;
-        }
-
-        .login-container {
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            color: var(--white);
         }
 
         .login-card {
-            background: var(--glass-white);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-            padding: 60px 45px;
+            padding: 60px 50px;
+            border-radius: 45px;
+            width: 100%;
+            max-width: 380px;
             text-align: center;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6);
         }
 
-        .brand-icon {
-            width: 70px;
-            height: 70px;
-            margin-bottom: 25px;
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
-        }
-
-        h1 { font-size: 2.2rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -1px; }
-        .tagline { color: var(--text-dim); font-size: 1rem; margin-bottom: 45px; }
+        .brand-icon { width: 75px; margin-bottom: 25px; }
+        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -1px; }
+        .tagline { color: rgba(255, 255, 255, 0.4); margin-bottom: 40px; font-size: 0.95rem; }
 
         .form-group { text-align: left; margin-bottom: 25px; }
         label { 
-            display: block; 
-            font-size: 0.75rem; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            margin-bottom: 10px; 
-            color: rgba(255, 255, 255, 0.4);
-            padding-left: 5px;
+            display: block; font-size: 0.75rem; font-weight: 700; 
+            color: rgba(255, 255, 255, 0.5); text-transform: uppercase; 
+            margin-bottom: 10px; margin-left: 5px;
         }
 
         input {
-            width: 100%;
-            box-sizing: border-box;
+            width: 100%; box-sizing: border-box;
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 18px 22px;
             border-radius: 20px;
-            padding: 18px 25px;
-            color: #fff;
-            font-size: 1rem;
+            color: #fff; font-size: 1rem;
             transition: all 0.3s ease;
         }
 
         input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+            outline: none; border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .btn-submit {
-            width: 100%;
-            padding: 20px;
-            background: #ffffff;
-            color: #000000;
-            border: none;
-            border-radius: 20px;
-            font-size: 1.05rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%; padding: 20px;
+            background: var(--white); color: #000;
+            border: none; border-radius: 20px;
+            font-size: 1.05rem; font-weight: 800;
+            cursor: pointer; transition: transform 0.2s ease;
             margin-top: 15px;
         }
 
-        .btn-submit:hover {
-            transform: scale(1.02);
-            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
-        }
-
-        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:hover { transform: translateY(-3px); }
 
         #error-msg {
-            margin-top: 25px;
-            font-size: 0.85rem;
-            color: #ff453a;
-            min-height: 20px;
-            font-weight: 500;
+            margin-top: 25px; font-size: 0.85rem; color: #ff453a;
+            min-height: 20px; font-weight: 600;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="login-card">
-            <img src="/assets/img/logo.png" alt="GupyMesa" class="brand-icon">
-            <h1>GupyMesa</h1>
-            <p class="tagline">Gestão Inteligente de Performance</p>
+    <div class="login-card">
+        <img src="/assets/img/logo.png" alt="GupyMesa" class="brand-icon">
+        <h1>GupyMesa</h1>
+        <p class="tagline">Performance Inteligente</p>
 
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>ID do Assistente</label>
-                    <input type="number" id="id" placeholder="Ex: 1185327" required>
-                </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>ID do Assistente</label>
+                <input type="number" id="id" placeholder="Digite seu ID" required>
+            </div>
 
-                <div class="form-group">
-                    <label>Senha de Acesso</label>
-                    <input type="password" id="senha" placeholder="••••••••" required>
-                </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="senha" placeholder="••••••••" required>
+            </div>
 
-                <button type="submit" class="btn-submit">Entrar no Painel</button>
-                <div id="error-msg"></div>
-            </form>
-        </div>
+            <button type="submit" class="btn-submit">Entrar no Painel</button>
+            <div id="error-msg"></div>
+        </form>
     </div>
 
     <script type="module">
         import { AuthEngine } from './src/engines/AuthEngine.js';
 
-        const loginForm = document.getElementById('loginForm');
-        const errorDiv = document.getElementById('error-msg');
-
-        loginForm.addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('id').value;
             const senha = document.getElementById('senha').value;
+            const errorDiv = document.getElementById('error-msg');
             
-            errorDiv.style.color = 'rgba(255,255,255,0.5)';
-            errorDiv.textContent = 'Verificando credenciais...';
+            errorDiv.style.color = 'rgba(255,255,255,0.4)';
+            errorDiv.textContent = 'Validando acesso...';
 
             try {
                 await AuthEngine.login(id, senha);
-                // Redireciona para a página de gestão após login bem-sucedido
                 window.location.href = '/public/gestao.html';
             } catch (err) {
                 errorDiv.style.color = '#ff453a';
