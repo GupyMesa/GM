@@ -2,11 +2,12 @@
 const express = require('express');
 const { BigQuery } = require('@google-cloud/bigquery');
 const path = require('path');
-const cors = require('cors'); // Boa prática para evitar erros de origem
+const cors = require('cors');
+const fs = require('fs'); // Necessário para criar arquivo temporário
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Aumentado para suportar CSVs grandes
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static('.'));
 
 const bq = new BigQuery({
@@ -61,8 +62,10 @@ app.get('/api/empresas', async (req, res) => {
     } catch (error) { res.json([]); }
 });
 
-// IMPORTAÇÃO COM VALIDAÇÃO DE ID (CORRIGIDA)
+// IMPORTAÇÃO VIA LOAD JOB (Compatível com Free Tier)
 app.post('/api/usuarios/import', async (req, res) => {
+    const tempFilePath = path.join(__dirname, 'temp_import_users.json');
+
     try {
         const novosUsuarios = req.body;
         
@@ -71,56 +74,69 @@ app.post('/api/usuarios/import', async (req, res) => {
             return res.status(400).json({ mensagem: 'Nenhum dado válido enviado.' });
         }
 
-        console.log(`📥 Recebendo ${novosUsuarios.length} usuários para importação...`);
+        console.log(`📥 Processando ${novosUsuarios.length} usuários...`);
 
-        // 2. Buscar IDs existentes (Lógica Otimizada)
+        // 2. Buscar IDs existentes para evitar duplicidade
         const idsParaVerificar = novosUsuarios.map(u => u.id).filter(id => !isNaN(id));
-        
         let idsExistentes = new Set();
         
         if (idsParaVerificar.length > 0) {
             try {
-                // Monta a query de forma segura
                 const query = `
                     SELECT id FROM \`${DATASET}.${TABLE_USERS}\`
                     WHERE id IN UNNEST(@ids)
                 `;
-                
-                const [rows] = await bq.query({
-                    query,
-                    params: { ids: idsParaVerificar }
-                });
-                
+                const [rows] = await bq.query({ query, params: { ids: idsParaVerificar } });
                 rows.forEach(r => idsExistentes.add(r.id));
-                console.log(`🔍 Encontrados ${idsExistentes.size} IDs já cadastrados.`);
             } catch (err) {
-                console.warn("⚠️  Aviso ao verificar duplicidade (pode ser tabela vazia):", err.message);
-                // Se der erro na verificação (ex: tabela não existe), tentamos inserir tudo
+                console.warn("⚠️  Aviso verificação IDs:", err.message);
             }
         }
 
-        // 3. Filtrar Duplicados
+        // 3. Filtrar novos
         const usuariosParaInserir = novosUsuarios.filter(u => !idsExistentes.has(u.id));
 
         if (usuariosParaInserir.length === 0) {
-            console.log("⏹️  Todos os usuários já existem.");
-            return res.json({ mensagem: 'Todos os usuários enviados já estão cadastrados.', inseridos: 0 });
+            return res.json({ mensagem: 'Todos os usuários já estão cadastrados.', inseridos: 0 });
         }
 
-        // 4. Inserir no BigQuery
-        console.log(`🚀 Inserindo ${usuariosParaInserir.length} novos usuários...`);
+        // 4. Criar Arquivo NDJSON (Newline Delimited JSON)
+        // O BigQuery Load Job exige um arquivo onde cada linha é um JSON válido.
+        const ndjson = usuariosParaInserir.map(u => JSON.stringify(u)).join('\n');
+        fs.writeFileSync(tempFilePath, ndjson);
+
+        console.log(`🚀 Iniciando Load Job para ${usuariosParaInserir.length} registros...`);
+
+        // 5. Executar Load Job
+        const [job] = await bq
+            .dataset(DATASET)
+            .table(TABLE_USERS)
+            .load(tempFilePath, {
+                sourceFormat: 'NEWLINE_DELIMITED_JSON',
+                writeDisposition: 'WRITE_APPEND', // Adiciona aos dados existentes
+            });
+
+        console.log(`⏳ Job ${job.id} iniciado. Aguardando conclusão...`);
         
-        await bq.dataset(DATASET).table(TABLE_USERS).insert(usuariosParaInserir);
+        // Aguarda o fim do processamento
+        await job.on('complete');
+        
+        console.log("✅ Carga concluída com sucesso!");
+
+        // Remove o arquivo temporário
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
 
         res.json({ 
-            mensagem: `Sucesso! ${usuariosParaInserir.length} usuários importados.`,
+            mensagem: `Sucesso! ${usuariosParaInserir.length} usuários importados via Load Job.`,
             inseridos: usuariosParaInserir.length,
             ignorados: idsExistentes.size
         });
 
     } catch (error) {
-        // Log detalhado do erro para debug
-        console.error('❌ ERRO CRÍTICO NA IMPORTAÇÃO:', JSON.stringify(error, null, 2));
+        // Limpeza em caso de erro
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+
+        console.error('❌ ERRO LOAD JOB:', JSON.stringify(error, null, 2));
         
         let msg = error.message;
         if (error.errors && error.errors.length > 0) {
