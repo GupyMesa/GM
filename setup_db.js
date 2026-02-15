@@ -1,4 +1,4 @@
-cat <<EOF > setup_db.js
+cat <<'EOF' > setup_db.js
 const { BigQuery } = require('@google-cloud/bigquery');
 const fs = require('fs');
 const path = require('path');
@@ -13,13 +13,18 @@ async function setup() {
     const tableId = 'usuarios';
 
     try {
-        console.log("🛠️  Iniciando reorganização do banco...");
+        console.log("🛠️ Reorganizando banco de dados (Modo Batch - Free Tier)...");
         
-        // 1. Tentar deletar a tabela antiga para limpar o esquema
-        try { await bq.dataset(datasetId).table(tableId).delete(); } catch(e) {}
+        // 1. Deleta a tabela antiga para resetar o esquema
+        try { 
+            await bq.dataset(datasetId).table(tableId).delete(); 
+            console.log("🗑️ Tabela antiga removida.");
+        } catch(e) {
+            console.log("ℹ️ Tabela não existia, criando nova.");
+        }
 
-        // 2. Criar a tabela com o esquema correto
-        await bq.dataset(datasetId).createTable(tableId, {
+        // 2. Cria a tabela com as colunas corretas
+        const [table] = await bq.dataset(datasetId).createTable(tableId, {
             schema: [
                 { name: 'id', type: 'INTEGER' },
                 { name: 'nome', type: 'STRING' },
@@ -27,34 +32,48 @@ async function setup() {
                 { name: 'senha', type: 'STRING' }
             ]
         });
+        console.log("📋 Nova tabela 'usuarios' criada.");
 
-        // 3. Processar Dados
+        // 3. Prepara os dados no formato NDJSON (exigido para o Load Job)
         const usuarios = [{ id: 1, nome: 'Super Admin', cargo: 'Admin', senha: 'Admin123' }];
         
-        const csvContent = fs.readFileSync('Usuarios.csv', 'utf8');
-        const rows = csvContent.split('\n').slice(1);
-        
-        rows.forEach(row => {
-            const cols = row.split(',');
-            if (cols.length >= 5) {
-                usuarios.push({
-                    id: parseInt(cols[0].trim()),
-                    nome: cols[1].trim(),
-                    cargo: cols[4].trim(), // FUNÇÃO
-                    senha: 'gupy123'
-                });
-            }
+        if (fs.existsSync('Usuarios.csv')) {
+            const csvContent = fs.readFileSync('Usuarios.csv', 'utf8');
+            const rows = csvContent.split('\n').slice(1);
+            
+            rows.forEach(row => {
+                const cols = row.split(',');
+                if (cols.length >= 5) {
+                    const idVal = parseInt(cols[0].trim());
+                    if (!isNaN(idVal)) {
+                        usuarios.push({
+                            id: idVal,
+                            nome: cols[1].trim(),
+                            cargo: cols[4].trim(),
+                            senha: 'gupy123'
+                        });
+                    }
+                }
+            });
+        }
+
+        // Converte o array para strings NDJSON (uma linha por objeto)
+        const ndjsonPath = path.join(__dirname, 'temp_usuarios.json');
+        const ndjsonData = usuarios.map(u => JSON.stringify(u)).join('\n');
+        fs.writeFileSync(ndjsonPath, ndjsonData);
+
+        // 4. Faz o carregamento via Load Job (Obrigatório para Free Tier)
+        console.log(`📦 Carregando ${usuarios.length} usuários...`);
+        await table.load(ndjsonPath, {
+            sourceFormat: 'NEWLINE_DELIMITED_JSON',
+            writeDisposition: 'WRITE_TRUNCATE'
         });
 
-        // 4. Inserir no BigQuery
-        await bq.dataset(datasetId).table(tableId).insert(usuarios);
-        console.log(\`✅ Sucesso! \${usuarios.length} usuários inseridos com a nova lógica.\`);
+        console.log("✅ SUCESSO! Banco de dados sincronizado.");
+        fs.unlinkSync(ndjsonPath); // Deleta arquivo temporário
     } catch (err) {
-        console.error("❌ Erro:", err.message);
+        console.error("❌ Erro no Setup:", err.message);
     }
 }
 setup();
 EOF
-
-# Execute agora para arrumar o banco
-node setup_db.js
