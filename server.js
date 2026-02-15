@@ -24,8 +24,11 @@ app.post('/api/login', async (req, res) => {
             res.json({ sucesso: false, mensagem: 'ID ou Senha incorretos.' });
         }
     } catch (e) {
+        console.error(e);
         res.status(500).json({ sucesso: false, mensagem: 'Erro no banco.' });
     }
 });
 
-app.listen(3000, () => console.log('🚀 Servidor GupyMesa rodando na porta 3000'));
+// AQUI ESTÁ A MUDANÇA: Usamos process.env.PORT
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
