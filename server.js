@@ -6,29 +6,24 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.'));
 
-// Configuração do BigQuery para o Render
-const bq = new BigQuery({
-    keyFilename: path.join(__dirname, 'credentials.json'),
-    projectId: 'gupymesa-487420'
-});
+// Configuração Inteligente: Tenta usar Variável de Ambiente, se não tiver, usa o arquivo
+const bqConfig = process.env.GOOGLE_CREDENTIALS 
+    ? {
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
+      }
+    : {
+        keyFilename: path.join(__dirname, 'credentials.json'),
+        projectId: 'gupymesa-487420'
+      };
 
-// Rota de Login
+const bq = new BigQuery(bqConfig);
+
 app.post('/api/login', async (req, res) => {
     const { id, senha } = req.body;
-    console.log('Tentativa de login ID:', id);
-
     try {
-        const query = `
-            SELECT id, nome, cargo, senha 
-            FROM \`gupymesa-487420.gupymesa.usuarios\` 
-            WHERE id = @id AND senha = @senha 
-            LIMIT 1`;
-        
-        const options = {
-            query: query,
-            params: { id: parseInt(id), senha: senha }
-        };
-
+        const query = `SELECT id, nome, cargo FROM \`gupymesa-487420.gupymesa.usuarios\` WHERE id = @id AND senha = @senha LIMIT 1`;
+        const options = { query, params: { id: parseInt(id), senha: senha } };
         const [rows] = await bq.query(options);
 
         if (rows.length > 0) {
@@ -43,6 +38,4 @@ app.post('/api/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-    console.log('Servidor rodando na porta ' + PORT);
-});
+app.listen(PORT, () => console.log('Servidor rodando na porta ' + PORT));
