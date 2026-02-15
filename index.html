@@ -1,38 +1,138 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GupyMesa - Login</title>
-    <link rel="icon" type="image/png" href="./assets/img/favicon.png">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .login-container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .logo { max-width: 180px; margin-bottom: 30px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; }
-        button { width: 100%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0056b3; }
+        :root {
+            --bg-color: #050505;
+            --accent-color: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 50px 40px;
+            border-radius: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-login {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+
+        h1 { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
+        p { color: rgba(255, 255, 255, 0.5); margin-bottom: 40px; }
+
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: rgba(255, 255, 255, 0.6); margin-left: 15px; }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 18px;
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 18px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 18px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-login:hover { transform: scale(1.02); }
+        .btn-login:active { transform: scale(0.98); }
+
+        #error-msg {
+            color: #ff453a;
+            font-size: 0.85rem;
+            margin-top: 15px;
+            min-height: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <img src="./assets/img/logo.png" alt="Logo" class="logo">
-        <input type="text" id="id_usuario" placeholder="ID de Acesso (Ex: 1)" required>
-        <input type="password" id="senha" placeholder="Senha" required>
-        <button id="btn-entrar">ENTRAR</button>
+
+    <div class="login-card">
+        <img src="/assets/img/logo.png" alt="GupyMesa" class="logo-login">
+        <h1>Bem-vindo</h1>
+        <p>Acesse sua conta para continuar</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>ID DO ASSISTENTE</label>
+                <input type="number" id="id" placeholder="Digite seu ID" required>
+            </div>
+            
+            <div class="form-group">
+                <label>SENHA</label>
+                <input type="password" id="senha" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-login">Entrar no Sistema</button>
+            <div id="error-msg"></div>
+        </form>
     </div>
 
     <script type="module">
-        import { AuthEngine } from './src/engines/AuthEngine.js?v=2';
+        import { AuthEngine } from './src/engines/AuthEngine.js';
 
-        document.getElementById('btn-entrar').addEventListener('click', () => {
-            const id = document.getElementById('id_usuario').value;
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('id').value;
             const senha = document.getElementById('senha').value;
-            if(id && senha) {
-                AuthEngine.login(id, senha);
-            } else {
-                alert('Preencha todos os campos');
+            const errorDiv = document.getElementById('error-msg');
+            
+            errorDiv.textContent = 'Autenticando...';
+
+            try {
+                await AuthEngine.login(id, senha);
+                window.location.href = '/public/gestao.html';
+            } catch (err) {
+                errorDiv.textContent = err.message;
             }
         });
     </script>
