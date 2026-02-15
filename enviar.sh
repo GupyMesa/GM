@@ -1,6 +1,9 @@
 #!/bin/bash
-echo "📦 Preparando envio para o GitHub..."
+# Pega a mensagem que você digitou ou usa uma padrão
+MENSAGEM="${1:-Atualização automática: $(date)}"
+
+echo "📦 Preparando envio: '$MENSAGEM'..."
 git add .
-git commit -m "Upload para o Render: $(date)"
+git commit -m "$MENSAGEM"
 git push origin main
-echo "✅ Código enviado com sucesso! O Render vai detectar agora."
+echo "✅ Código enviado com sucesso!"
