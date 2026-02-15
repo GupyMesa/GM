@@ -24,34 +24,29 @@
             overflow-x: hidden;
         }
 
-        /* CORREÇÃO DO OVERLAP: Espaço para o Menu Fixo */
+        /* TELA CHEIA E RESPONSIVA */
         #app {
-            padding: 100px 20px 20px 20px; /* Topo aumentado para 100px */
-            max-width: 1400px;
-            margin: 0 auto;
+            /* Padding top 100px para o menu fixo não cobrir o conteúdo */
+            padding: 100px 30px 30px 30px; 
+            width: 100%;
+            max-width: 100%; /* Garante uso total da tela */
+            box-sizing: border-box; /* Garante que o padding não estoure a largura */
             animation: fadeIn 0.8s ease-out;
         }
 
-        /* Layout */
+        /* Menu Superior Fixo */
         #menu-superior {
-            /* O menu é fixed no componente, então aqui garantimos que ele fique acima de tudo */
-            position: relative; 
-            z-index: 1000;
+            position: relative; z-index: 1000;
         }
 
         #submenu-gestao {
-            margin-bottom: 30px;
-            position: relative;
-            z-index: 900;
+            margin-bottom: 25px; position: relative; z-index: 900;
         }
 
         #conteudo-principal {
-            position: relative;
-            z-index: 1;
-            min-height: 400px;
+            position: relative; z-index: 1; min-height: 400px;
         }
 
-        /* Modais */
         #modal-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 9999; pointer-events: none;
@@ -60,7 +55,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -68,17 +62,12 @@
     </style>
 </head>
 <body>
-
     <div id="app">
         <div id="menu-superior"></div>
-        
         <div id="submenu-gestao"></div>
-        
         <div id="conteudo-principal"></div>
     </div>
-
     <div id="modal-container"></div>
-
     <script type="module">
         import { GestaoManager } from '../src/managers/GestaoManager.js';
         document.addEventListener('DOMContentLoaded', () => GestaoManager.init());

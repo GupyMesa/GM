@@ -3,74 +3,67 @@ import { AuthEngine } from '../engines/AuthEngine.js';
 import { renderMenuSuperior } from '../components/MenuSuperior.js';
 import { renderSubMenuGestao } from '../components/SubMenuGestao.js';
 import { UsuariosModule } from '../modules/UsuariosModule.js';
+import { EmpresasModule } from '../modules/EmpresasModule.js'; // Novo Import
 import { ModalNovoUsuario } from '../components/ModalNovoUsuario.js';
 import { ModalImportacao } from '../components/ModalImportacao.js';
 
 export const GestaoManager = {
     state: {
-        moduloAtivo: 'usuarios' // 'usuarios' | 'empresas' | 'metas'
+        moduloAtivo: 'usuarios' // padrao
     },
 
     async init() {
         console.log("🚀 Iniciando GestaoManager...");
-
-        // 1. Segurança
         const user = AuthEngine.checkAccess();
         if (!user) return;
 
-        // 2. Renderizar Menu Superior (Fixo)
         renderMenuSuperior('menu-superior');
-
-        // 3. Renderizar Submenu e carregar módulo inicial
         this.atualizarInterface();
     },
 
     atualizarInterface() {
-        // Renderiza o Submenu com o estado atual
         renderSubMenuGestao('submenu-gestao', {
             moduloAtivo: this.state.moduloAtivo,
             onTrocarModulo: (novoModulo) => {
                 this.state.moduloAtivo = novoModulo;
-                this.atualizarInterface(); // Re-renderiza para atualizar abas
+                this.atualizarInterface();
             },
             onAddSingle: () => this.handleAddSingle(),
             onAddMass: () => this.handleAddMass()
         });
-
-        // Carrega o conteúdo do módulo selecionado
         this.carregarModulo();
     },
 
     async carregarModulo() {
         const container = 'conteudo-principal';
-        document.getElementById(container).innerHTML = '<div style="text-align:center; padding:50px; opacity:0.5">Carregando...</div>';
+        document.getElementById(container).innerHTML = '<div style="text-align:center; padding:50px; opacity:0.5">Carregando dados...</div>';
 
         switch (this.state.moduloAtivo) {
             case 'usuarios':
                 await UsuariosModule.init(container);
                 break;
             case 'empresas':
-                document.getElementById(container).innerHTML = '<h2 style="text-align:center">Módulo de Empresas (Em breve)</h2>';
+                await EmpresasModule.init(container); // Agora funcional
+                break;
+            case 'gestoras':
+                document.getElementById(container).innerHTML = '<div style="text-align:center; padding:50px; color:#fff">Visualização de Gestoras (Em breve)</div>';
+                break;
+            case 'auditoras':
+                document.getElementById(container).innerHTML = '<div style="text-align:center; padding:50px; color:#fff">Visualização de Auditoras (Em breve)</div>';
                 break;
             default:
-                document.getElementById(container).innerHTML = '<h2 style="text-align:center">Módulo em construção</h2>';
+                document.getElementById(container).innerHTML = 'Módulo desconhecido';
         }
     },
 
-    // Ações contextuais (mudam dependendo do módulo)
     handleAddSingle() {
-        if (this.state.moduloAtivo === 'usuarios') {
-            ModalNovoUsuario.render('modal-container');
-        } else {
-            alert(`Novo item para ${this.state.moduloAtivo} em breve!`);
-        }
+        const modulo = this.state.moduloAtivo;
+        if (modulo === 'usuarios') ModalNovoUsuario.render('modal-container');
+        else if (modulo === 'empresas') alert('Modal de Nova Empresa em desenvolvimento');
+        else alert(`Ação de novo registro para ${modulo}`);
     },
 
     handleAddMass() {
-        if (this.state.moduloAtivo === 'usuarios') {
-            ModalImportacao.render('modal-container');
-        } else {
-            alert(`Importação para ${this.state.moduloAtivo} em breve!`);
-        }
+        ModalImportacao.render('modal-container');
     }
 };
