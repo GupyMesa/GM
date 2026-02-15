@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const { BigQuery } = require('@google-cloud/bigquery');
 const path = require('path');
@@ -12,6 +13,7 @@ const bq = new BigQuery({
     location: 'southamerica-east1'
 });
 
+// Login
 app.post('/api/login', async (req, res) => {
     const { id, senha } = req.body;
     try {
@@ -34,6 +36,31 @@ app.post('/api/login', async (req, res) => {
     } catch (error) {
         console.error('Erro Login:', error.message);
         res.status(500).json({ sucesso: false, mensagem: error.message });
+    }
+});
+
+// Listar Usuários
+app.get('/api/usuarios', async (req, res) => {
+    try {
+        const query = `SELECT id, nome, cargo FROM \`gupymesa-487420.sistema_mesa.usuarios\` LIMIT 1000`;
+        const [rows] = await bq.query({ query });
+        res.json(rows);
+    } catch (error) {
+        console.error('Erro Usuários:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Listar Empresas (Preparo para o futuro)
+app.get('/api/empresas', async (req, res) => {
+    try {
+        // Verifica se a tabela existe antes de consultar
+        const query = `SELECT * FROM \`gupymesa-487420.sistema_mesa.empresas\` LIMIT 1000`;
+        const [rows] = await bq.query({ query });
+        res.json(rows);
+    } catch (error) {
+        // Se a tabela não existir, retorna array vazio sem erro
+        res.json([]); 
     }
 });
 
