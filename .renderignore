@@ -1,0 +1,5 @@
+cat <<EOF > .renderignore
+.idx/
+.git/
+node_modules/
+EOF
