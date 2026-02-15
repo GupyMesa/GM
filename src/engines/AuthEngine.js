@@ -1,6 +1,6 @@
 export class AuthEngine {
     static async login(id, senha) {
-        console.log('Tentando logar ID:', id);
+        console.log('🔄 Iniciando login para ID:', id);
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
@@ -8,21 +8,21 @@ export class AuthEngine {
                 body: JSON.stringify({ id, senha })
             });
 
-            if (!response.ok) throw new Error('Erro na rede');
+            if (!response.ok) throw new Error('Erro de conexão com servidor');
 
             const data = await response.json();
             
             if (data.sucesso) {
+                console.log('✅ Login autorizado!');
                 localStorage.setItem('usuario_logado', JSON.stringify(data.usuario));
-                // Redirecionamento simples para testar
-                alert('Login Sucesso! Redirecionando...');
                 window.location.href = 'public/gestao.html';
             } else {
-                alert(data.mensagem || 'Login falhou');
+                console.warn('❌ Login negado:', data.mensagem);
+                alert(data.mensagem || 'ID ou Senha incorretos.');
             }
         } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao conectar. Veja o console (F12).');
+            console.error('🔥 Erro Crítico:', error);
+            alert('Erro ao conectar. Tente novamente.');
         }
     }
 }
