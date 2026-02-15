@@ -1,41 +1,28 @@
 export class AuthEngine {
-    /**
-     * Envia os dados de login para o servidor
-     * @param {string} id - O ID do usuário
-     * @param {string} senha - A senha do usuário
-     */
     static async login(id, senha) {
+        console.log('Tentando logar ID:', id);
         try {
-            console.log('Tentando logar com ID:', id);
-            
             const response = await fetch('/api/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, senha })
             });
 
-            const data = await response.json();
-            console.log('Resposta do servidor:', data);
+            if (!response.ok) throw new Error('Erro na rede');
 
+            const data = await response.json();
+            
             if (data.sucesso) {
-                // 1. Salvar os dados do usuário no navegador (Sessão)
                 localStorage.setItem('usuario_logado', JSON.stringify(data.usuario));
-                
-                // 2. Redirecionar baseado no cargo
-                if (data.usuario.cargo === 'Gestora' || data.usuario.cargo === 'Admin') {
-                    window.location.href = 'public/gestao.html';
-                } else {
-                    // Se for Auditora ou outro cargo
-                    window.location.href = 'public/dashboard.html'; 
-                }
+                // Redirecionamento simples para testar
+                alert('Login Sucesso! Redirecionando...');
+                window.location.href = 'public/gestao.html';
             } else {
-                alert(data.mensagem || 'ID ou Senha incorretos.');
+                alert(data.mensagem || 'Login falhou');
             }
         } catch (error) {
-            console.error('Erro técnico no login:', error);
-            alert('Erro ao conectar com o servidor. Tente novamente.');
+            console.error('Erro:', error);
+            alert('Erro ao conectar. Veja o console (F12).');
         }
     }
 }
