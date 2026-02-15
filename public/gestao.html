@@ -16,8 +16,7 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
             background-image: 
@@ -28,58 +27,41 @@
             overflow-x: hidden;
         }
 
-        /* Container Principal */
-        #app {
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-            animation: fadeIn 0.8s ease-out;
-        }
+        #app { padding: 20px; max-width: 1400px; margin: 0 auto; animation: fadeIn 0.8s ease-out; }
 
-        /* Menu Superior */
-        #menu-superior {
-            position: relative;
-            z-index: 1000;
-            margin-bottom: 40px;
-        }
+        /* Espaços reservados para os componentes */
+        #menu-superior { margin-bottom: 20px; position: relative; z-index: 100; }
+        #submenu-gestao { margin-bottom: 30px; position: relative; z-index: 90; }
+        #conteudo-principal { position: relative; z-index: 1; }
+        
+        /* Container para Modais (Ficam invisíveis até serem chamados) */
+        #modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none; }
+        #modal-container > * { pointer-events: auto; }
 
-        /* Área de Conteúdo (Tabelas e Cards) */
-        #conteudo-principal {
-            position: relative;
-            z-index: 1;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Animação de Entrada */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Scrollbar Personalizada */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
     <div id="app">
         <div id="menu-superior"></div>
-        <div id="conteudo-principal">
+        <div id="submenu-gestao"></div> <div id="conteudo-principal">
             <div style="text-align: center; padding: 50px; color: rgba(255,255,255,0.3);">
-                Carregando painel...
+                Carregando sistema...
             </div>
         </div>
     </div>
 
+    <div id="modal-container"></div>
+
     <script type="module">
         import { GestaoManager } from '../src/managers/GestaoManager.js';
-
-        // Inicializa o sistema assim que a página carrega
-        document.addEventListener('DOMContentLoaded', () => {
-            GestaoManager.init();
-        });
+        document.addEventListener('DOMContentLoaded', () => GestaoManager.init());
     </script>
 </body>
 </html>

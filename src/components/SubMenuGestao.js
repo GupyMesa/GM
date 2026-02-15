@@ -1,179 +1,94 @@
-import { abrirModalNovoUsuario } from './ModalNovoUsuario.js';
-import { abrirModalImportacao } from './ModalImportacao.js';
-import { abrirModalNovaEmpresa } from './ModalNovaEmpresa.js';
-import { abrirModalImportacaoEmpresas } from './ModalImportacaoEmpresas.js';
-import { UsuariosModule } from '../modules/UsuariosModule.js';
-import { EmpresasModule } from '../modules/EmpresasModule.js';
-import { GestaoManager } from '../managers/GestaoManager.js';
+// src/components/SubMenuGestao.js
 
-export function renderizarSubMenuGestao(containerId, abaAtiva = 'gestor') { // Padrão agora é gestor
+export const renderSubMenuGestao = (containerId, actions) => {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    let htmlFiltros = '';
-    let htmlTotais = '';
-    let mostrarBotoesAcao = true; // Controla se mostra Novo/Importar
-
-    // --- CONFIGURAÇÃO POR ABA ---
-    
-    // 1. ABA GESTOR (Antiga Metas)
-    if (abaAtiva === 'gestor') {
-        htmlFiltros = `
-            <div class="px-2 py-2 text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 rounded-lg border border-indigo-100 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                Visão Geral & Metas
+    const html = `
+        <div class="glass-submenu">
+            <div class="submenu-left">
+                <h2 class="page-title">Painel de Controle</h2>
             </div>
-        `;
-        mostrarBotoesAcao = false; // Gestor geralmente só visualiza dashboards
-    } 
-    
-    // 2. ABA AUDITORA (Antiga Assertividade)
-    else if (abaAtiva === 'auditora') {
-        htmlFiltros = `
-            <div class="px-2 py-2 text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                Qualidade & Assertividade
-            </div>
-        `;
-        mostrarBotoesAcao = false;
-    }
-
-    // 3. ABA USUÁRIOS
-    else if (abaAtiva === 'usuarios') {
-        htmlFiltros = `
-            <select id="filtro-situacao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
-                <option value="ATIVO" selected>⚡ Ativos</option>
-                <option value="INATIVO">💤 Inativos</option>
-                <option value="TODOS">Todos</option>
-            </select>
-            <select id="filtro-contrato" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
-                <option value="TODOS" selected>📄 Contratos</option>
-                <option value="CLT">CLT</option>
-                <option value="TERCEIROS">Terceiros</option>
-            </select>
-            <select id="filtro-funcao" class="bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs rounded-lg px-2 py-2 outline-none focus:border-indigo-500 cursor-pointer hover:bg-slate-100">
-                <option value="TODAS" selected>💼 Funções</option>
-                <option value="ASSISTENTE">Assistente</option>
-                <option value="AUDITORA">Auditora</option>
-                <option value="GESTORA">Gestora</option>
-            </select>
-        `;
-        htmlTotais = `
-            <div class="hidden xl:flex items-center gap-2 mr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                <span>Total: <b class="text-slate-800" id="badge-total">0</b></span>
-                <span class="w-px h-3 bg-slate-300 mx-1"></span>
-                <span class="text-indigo-600">CLT: <b id="badge-clt">0</b></span>
-                <span class="text-indigo-600">Terceiros: <b id="badge-terceiros">0</b></span>
-            </div>
-        `;
-    } 
-    
-    // 4. ABA EMPRESAS
-    else if (abaAtiva === 'empresas') {
-        htmlFiltros = `
-            <div class="px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-lg border border-slate-100">
-                Gerenciamento de Clientes
-            </div>
-        `;
-        htmlTotais = `
-            <div class="hidden xl:flex items-center gap-2 mr-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                <span>Cadastradas: <b class="text-slate-800" id="badge-total-empresas">0</b></span>
-            </div>
-        `;
-    }
-
-    // --- MONTAGEM DOS BOTÕES DE AÇÃO ---
-    let htmlBotoes = '';
-    if (mostrarBotoesAcao) {
-        htmlBotoes = `
-            <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
-            <button id="btn-novo-cadastro" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 whitespace-nowrap">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                Novo
-            </button>
-            <button id="btn-importar" class="text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 active:scale-95 whitespace-nowrap">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-width="2"></path></svg>
-                Importar
-            </button>
-        `;
-    }
-
-    // --- RENDERIZAÇÃO FINAL ---
-    container.innerHTML = `
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-4 p-2 flex flex-col 2xl:flex-row items-center justify-between gap-4">
             
-            <div class="flex flex-wrap items-center gap-2 w-full 2xl:w-auto">
-                <div class="relative group">
-                    <input type="text" id="filtro-busca" placeholder="Buscar..." 
-                        class="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none w-32 transition-all focus:w-48">
-                    <div class="absolute left-3 top-2.5 text-slate-400 group-focus-within:text-indigo-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2"></path></svg>
-                    </div>
-                </div>
+            <div class="submenu-right">
+                <button id="btnFullscreen" class="btn-icon" title="Tela Cheia">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </button>
+                
+                <div class="divider"></div>
 
-                <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
-                ${htmlFiltros}
-                ${htmlBotoes}
-            </div>
+                <button id="btnAddMass" class="btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Importar CSV
+                </button>
 
-            <div class="flex items-center gap-3 w-full 2xl:w-auto justify-between 2xl:justify-end border-t 2xl:border-t-0 border-slate-100 pt-2 2xl:pt-0">
-                ${htmlTotais}
-                <div class="flex bg-slate-100 p-1 rounded-lg">
-                    ${botaoTab('gestor', 'Gestor', abaAtiva === 'gestor')}
-                    ${botaoTab('auditora', 'Auditora', abaAtiva === 'auditora')}
-                    ${botaoTab('usuarios', 'Usuários', abaAtiva === 'usuarios')}
-                    ${botaoTab('empresas', 'Empresas', abaAtiva === 'empresas')}
-                </div>
+                <button id="btnAddSingle" class="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Novo Usuário
+                </button>
             </div>
         </div>
+
+        <style>
+            .glass-submenu {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 20px;
+                padding: 15px 25px;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+
+            .page-title { font-size: 1.2rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+
+            .submenu-right { display: flex; align-items: center; gap: 12px; }
+
+            .divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 5px; }
+
+            .btn-icon {
+                background: transparent; border: none; color: rgba(255,255,255,0.7);
+                cursor: pointer; padding: 8px; border-radius: 10px; transition: all 0.2s;
+            }
+            .btn-icon:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+            .btn-secondary {
+                background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+                color: #fff; padding: 10px 18px; border-radius: 12px; font-weight: 500; font-size: 0.9rem;
+                cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+            }
+            .btn-secondary:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+
+            .btn-primary {
+                background: #fff; border: none; color: #000;
+                padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem;
+                cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+            }
+            .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(255,255,255,0.15); }
+        </style>
     `;
 
-    // --- CONEXÃO DE EVENTOS ---
+    container.innerHTML = html;
 
-    // 1. Busca Universal
-    const inputBusca = document.getElementById('filtro-busca');
-    if(inputBusca) {
-        inputBusca.addEventListener('input', (e) => {
-            if(abaAtiva === 'usuarios') UsuariosModule.aplicarFiltros({ termo: e.target.value });
-            if(abaAtiva === 'empresas') EmpresasModule.aplicarFiltros({ termo: e.target.value });
-            // Gestor e Auditora podem ter busca no futuro
-        });
-    }
-
-    // 2. Filtros de Usuário
-    if (abaAtiva === 'usuarios') {
-        document.getElementById('filtro-situacao')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ situacao: e.target.value }));
-        document.getElementById('filtro-contrato')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ contrato: e.target.value }));
-        document.getElementById('filtro-funcao')?.addEventListener('change', (e) => UsuariosModule.aplicarFiltros({ funcao: e.target.value }));
-    }
-
-    // 3. Botões de Ação (Só se existirem)
-    const btnNovo = document.getElementById('btn-novo-cadastro');
-    if (btnNovo) {
-        btnNovo.addEventListener('click', () => {
-            if(abaAtiva === 'usuarios') abrirModalNovoUsuario();
-            if(abaAtiva === 'empresas') abrirModalNovaEmpresa();
-        });
-    }
-
-    const btnImportar = document.getElementById('btn-importar');
-    if (btnImportar) {
-        btnImportar.addEventListener('click', () => {
-            if(abaAtiva === 'usuarios') abrirModalImportacao();
-            if(abaAtiva === 'empresas') abrirModalImportacaoEmpresas();
-        });
-    }
-
-    // 4. Navegação das Abas (NOVA ORDEM)
-    ['gestor', 'auditora', 'usuarios', 'empresas'].forEach(aba => {
-        const btn = document.getElementById(`tab-${aba}`);
-        if(btn) btn.addEventListener('click', () => GestaoManager.mudarAba(aba));
+    // Ações dos Botões
+    document.getElementById('btnAddSingle').addEventListener('click', actions.onAddSingle);
+    document.getElementById('btnAddMass').addEventListener('click', actions.onAddMass);
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
     });
-}
-
-function botaoTab(id, label, ativo = false) {
-    const css = ativo 
-        ? 'bg-white text-indigo-600 shadow-sm font-bold' 
-        : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-200/50 font-medium';
-    return `<button id="tab-${id}" class="px-4 py-1.5 rounded-md text-[10px] uppercase tracking-wide transition-all ${css}">${label}</button>`;
-}
+};

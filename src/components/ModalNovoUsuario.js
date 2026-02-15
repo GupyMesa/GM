@@ -1,118 +1,96 @@
-import { UsuariosModule } from '../modules/UsuariosModule.js';
+// src/components/ModalNovoUsuario.js
 
-export function abrirModalNovoUsuario() {
-    let modal = document.getElementById('modal-novo-usuario');
-    
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'modal-novo-usuario';
-        modal.className = 'fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity opacity-0';
+export const ModalNovoUsuario = {
+    render(containerId) {
+        const container = document.getElementById(containerId);
+        // Cria o elemento do modal se não existir
+        let modal = document.getElementById('modal-novo-usuario');
         
-        modal.innerHTML = `
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all scale-95 opacity-0" id="modal-content-novo">
-                <div class="flex justify-between items-start mb-6 border-b border-slate-100 pb-4">
-                    <div>
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Novo Cadastro</h3>
-                        <p class="text-xs text-slate-500 font-medium mt-1">Preencha os dados (Somente CLT ou Terceiros)</p>
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'modal-novo-usuario';
+            modal.className = 'glass-modal-overlay hidden';
+            
+            modal.innerHTML = `
+                <div class="glass-modal">
+                    <div class="modal-header">
+                        <h3>Novo Assistente</h3>
+                        <button class="btn-close">&times;</button>
                     </div>
-                    <button id="btn-fechar-modal-novo" class="text-slate-300 hover:text-rose-500 transition p-1 rounded-full hover:bg-rose-50">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                    </button>
+                    <form id="formNovoUsuario">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" placeholder="Ex: Ana Silva" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ID do Sistema</label>
+                            <input type="number" placeholder="Ex: 102030" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Cargo / Função</label>
+                            <select>
+                                <option value="ASSISTENTE">Assistente</option>
+                                <option value="AUDITORA">Auditora</option>
+                                <option value="GESTORA">Gestora</option>
+                            </select>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn-cancel">Cancelar</button>
+                            <button type="submit" class="btn-save">Salvar</button>
+                        </div>
+                    </form>
                 </div>
-                
-                <form id="form-novo-usuario" class="space-y-5">
+                <style>
+                    .glass-modal-overlay {
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+                        display: flex; justify-content: center; align-items: center; z-index: 10000;
+                        opacity: 0; pointer-events: none; transition: opacity 0.3s;
+                    }
+                    .glass-modal-overlay.visible { opacity: 1; pointer-events: auto; }
                     
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="col-span-1">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">ID Assistente</label>
-                            <input type="number" name="id_assistente" required placeholder="Ex: 1074360"
-                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition">
-                        </div>
-                        
-                        <div class="col-span-2">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Situação</label>
-                            <select name="situacao" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-3 py-2.5 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer">
-                                <option value="ATIVO" selected>ATIVO</option>
-                                <option value="INATIVO">INATIVO</option>
-                            </select>
-                        </div>
-                    </div>
+                    .glass-modal {
+                        background: #151515; border: 1px solid rgba(255,255,255,0.1);
+                        padding: 30px; border-radius: 24px; width: 400px;
+                        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+                        transform: scale(0.95); transition: transform 0.3s;
+                    }
+                    .glass-modal-overlay.visible .glass-modal { transform: scale(1); }
 
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nome Completo</label>
-                        <input type="text" name="nome_assist" required placeholder="Nome do assistente"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition">
-                    </div>
+                    .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                    .modal-header h3 { margin: 0; font-size: 1.2rem; }
+                    .btn-close { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contrato</label>
-                            <select name="contrato" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-                                <option value="CLT">CLT</option>
-                                <option value="TERCEIROS">TERCEIROS</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Função</label>
-                            <select name="funcao" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-                                <option value="ASSISTENTE">ASSISTENTE</option>
-                                <option value="AUDITORA">AUDITORA</option>
-                                <option value="GESTORA">GESTORA</option>
-                            </select>
-                        </div>
-                    </div>
+                    .form-group { margin-bottom: 15px; }
+                    .form-group label { display: block; font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-bottom: 5px; }
+                    .form-group input, .form-group select {
+                        width: 100%; padding: 12px; border-radius: 12px;
+                        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+                        color: #fff; box-sizing: border-box;
+                    }
 
-                    <div class="pt-6 border-t border-slate-100 mt-6 bg-slate-50 -mx-8 -mb-8 p-6 rounded-b-2xl">
-                        <div class="flex items-center gap-3 mb-4 text-xs text-slate-500 bg-white p-3 rounded-lg border border-slate-200">
-                            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                            <p>Senha inicial definida como: <strong class="text-slate-800 font-mono">gupy123</strong></p>
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-500/20 active:scale-95">
-                            Confirmar Cadastro
-                        </button>
-                    </div>
-                </form>
-            </div>
-        `;
-        document.body.appendChild(modal);
+                    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+                    .btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 12px; cursor: pointer; }
+                    .btn-save { background: #fff; border: none; color: #000; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+                </style>
+            `;
+            
+            container.appendChild(modal);
 
-        const fechar = () => {
-            modal.classList.add('opacity-0');
-            modal.querySelector('#modal-content-novo').classList.remove('scale-100');
-            modal.querySelector('#modal-content-novo').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 200);
-        };
-
-        document.getElementById('btn-fechar-modal-novo').onclick = fechar;
-        modal.addEventListener('click', (e) => { if (e.target === modal) fechar(); });
-
-        document.getElementById('form-novo-usuario').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const novoUsuario = {
-                id: formData.get('id_assistente'),
-                nome: formData.get('nome_assist'),
-                contrato: formData.get('contrato'),
-                situacao: formData.get('situacao'),
-                funcao: formData.get('funcao')
-            };
-            try {
-                UsuariosModule.adicionarUsuario(novoUsuario);
-                e.target.reset();
-                fechar();
-                alert(`Usuário ${novoUsuario.nome} cadastrado com sucesso!`);
-            } catch (erro) {
-                alert("Erro ao cadastrar: " + erro.message);
-            }
+            // Eventos
+            const close = () => modal.classList.remove('visible');
+            modal.querySelector('.btn-close').addEventListener('click', close);
+            modal.querySelector('.btn-cancel').addEventListener('click', close);
+            modal.querySelector('#formNovoUsuario').addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Funcionalidade de salvar em desenvolvimento (API)!');
+                close();
+            });
+        }
+        
+        // Abre o modal
+        requestAnimationFrame(() => {
+            document.getElementById('modal-novo-usuario').classList.add('visible');
         });
     }
-
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        const content = modal.querySelector('#modal-content-novo');
-        content.classList.remove('scale-95', 'opacity-0');
-        content.classList.add('scale-100');
-    }, 10);
-}
+};
