@@ -2,28 +2,26 @@
 import { renderTabelaUsuarios } from './TabelaUsuarios.js';
 
 export const UsuariosModule = {
-    /**
-     * Inicializa o módulo de usuários: busca dados e renderiza
-     */
     async init(containerId) {
         try {
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            container.innerHTML = '<div style="text-align:center; padding: 20px; color: #fff;">Carregando equipe...</div>';
-
+            // Busca dados
             const response = await fetch('/api/usuarios');
-            if (!response.ok) throw new Error('Falha ao buscar usuários');
-
+            if (!response.ok) throw new Error('Erro ao buscar dados');
+            
             const usuarios = await response.json();
+            
+            // Renderiza a tabela usando o componente visual
             renderTabelaUsuarios(containerId, usuarios);
             
         } catch (error) {
-            console.error('Erro no módulo de usuários:', error);
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.innerHTML = `<div style="color: #ff453a; text-align: center; padding: 20px;">Erro ao carregar dados: ${error.message}</div>`;
-            }
+            console.error('Erro:', error);
+            document.getElementById(containerId).innerHTML = `
+                <div style="color:#ff453a; text-align:center; padding:40px">
+                    Erro ao carregar equipe: ${error.message}
+                </div>`;
         }
     }
 };
