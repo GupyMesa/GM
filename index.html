@@ -5,133 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GupyMesa - Login</title>
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #050505;
-            --accent-color: #ffffff;
-            --glass-bg: rgba(255, 255, 255, 0.05);
+            --bg-dark: #050505;
+            --glass-white: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.5);
         }
 
         body {
             margin: 0;
             padding: 0;
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 100%);
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% -20%, #1a1a2e 0%, #050505 100%),
+                radial-gradient(circle at 0% 100%, #0a0a1a 0%, transparent 40%);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--text-main);
             overflow: hidden;
-            color: #fff;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--glass-white);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 50px 40px;
             border-radius: 40px;
-            width: 100%;
-            max-width: 400px;
+            padding: 60px 45px;
             text-align: center;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
         }
 
-        .logo-login {
-            width: 80px;
-            margin-bottom: 20px;
+        .brand-icon {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
         }
 
-        h1 { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
-        p { color: rgba(255, 255, 255, 0.5); margin-bottom: 40px; }
+        h1 { font-size: 2.2rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -1px; }
+        .tagline { color: var(--text-dim); font-size: 1rem; margin-bottom: 45px; }
 
-        .form-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: rgba(255, 255, 255, 0.6); margin-left: 15px; }
+        .form-group { text-align: left; margin-bottom: 25px; }
+        label { 
+            display: block; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 10px; 
+            color: rgba(255, 255, 255, 0.4);
+            padding-left: 5px;
+        }
 
         input {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px 20px;
-            border-radius: 18px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 18px 25px;
             color: #fff;
             font-size: 1rem;
-            box-sizing: border-box;
             transition: all 0.3s ease;
         }
 
         input:focus {
             outline: none;
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
         }
 
-        .btn-login {
+        .btn-submit {
             width: 100%;
-            padding: 18px;
-            background: #fff;
-            color: #000;
+            padding: 20px;
+            background: #ffffff;
+            color: #000000;
             border: none;
-            border-radius: 18px;
-            font-size: 1rem;
+            border-radius: 20px;
+            font-size: 1.05rem;
             font-weight: 700;
             cursor: pointer;
-            margin-top: 20px;
-            transition: transform 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 15px;
         }
 
-        .btn-login:hover { transform: scale(1.02); }
-        .btn-login:active { transform: scale(0.98); }
+        .btn-submit:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-submit:active { transform: scale(0.98); }
 
         #error-msg {
-            color: #ff453a;
+            margin-top: 25px;
             font-size: 0.85rem;
-            margin-top: 15px;
+            color: #ff453a;
             min-height: 20px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <img src="/assets/img/logo.png" alt="GupyMesa" class="logo-login">
-        <h1>Bem-vindo</h1>
-        <p>Acesse sua conta para continuar</p>
+    <div class="login-container">
+        <div class="login-card">
+            <img src="/assets/img/logo.png" alt="GupyMesa" class="brand-icon">
+            <h1>GupyMesa</h1>
+            <p class="tagline">Gestão Inteligente de Performance</p>
 
-        <form id="loginForm">
-            <div class="form-group">
-                <label>ID DO ASSISTENTE</label>
-                <input type="number" id="id" placeholder="Digite seu ID" required>
-            </div>
-            
-            <div class="form-group">
-                <label>SENHA</label>
-                <input type="password" id="senha" placeholder="••••••••" required>
-            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>ID do Assistente</label>
+                    <input type="number" id="id" placeholder="Ex: 1185327" required>
+                </div>
 
-            <button type="submit" class="btn-login">Entrar no Sistema</button>
-            <div id="error-msg"></div>
-        </form>
+                <div class="form-group">
+                    <label>Senha de Acesso</label>
+                    <input type="password" id="senha" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Entrar no Painel</button>
+                <div id="error-msg"></div>
+            </form>
+        </div>
     </div>
 
     <script type="module">
         import { AuthEngine } from './src/engines/AuthEngine.js';
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        const loginForm = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('error-msg');
+
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('id').value;
             const senha = document.getElementById('senha').value;
-            const errorDiv = document.getElementById('error-msg');
             
-            errorDiv.textContent = 'Autenticando...';
+            errorDiv.style.color = 'rgba(255,255,255,0.5)';
+            errorDiv.textContent = 'Verificando credenciais...';
 
             try {
                 await AuthEngine.login(id, senha);
+                // Redireciona para a página de gestão após login bem-sucedido
                 window.location.href = '/public/gestao.html';
             } catch (err) {
+                errorDiv.style.color = '#ff453a';
                 errorDiv.textContent = err.message;
             }
         });
