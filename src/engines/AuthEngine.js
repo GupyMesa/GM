@@ -2,7 +2,7 @@
 
 export class AuthEngine {
     /**
-     * Realiza a autenticação do usuário no BigQuery
+     * Realiza a autenticação do usuário no BigQuery via API
      */
     static async login(id, senha) {
         console.log(`🔄 Iniciando login para ID: ${id}`);
@@ -15,32 +15,32 @@ export class AuthEngine {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.mensagem || 'Credenciais inválidas ou erro de rede');
+            throw new Error(errorData.mensagem || 'Erro de conexão ou credenciais inválidas');
         }
 
         const data = await response.json();
         
-        // Armazena a sessão no navegador (persistência)
+        // Salva a sessão para persistência
         localStorage.setItem('gupymesa_user', JSON.stringify(data.usuario));
         return data.usuario;
     }
 
     /**
-     * Remove os dados da sessão e redireciona para o login
+     * Logout: Limpa a sessão e redireciona
      */
     static logout() {
-        console.log("👋 Encerrando sessão do GupyMesa...");
+        console.log("👋 Saindo do sistema...");
         localStorage.removeItem('gupymesa_user');
         window.location.href = '/index.html';
     }
 
     /**
-     * Verifica se existe um usuário logado. Se não houver, bloqueia o acesso.
+     * Segurança: Verifica se está logado
      */
     static checkAccess() {
         const user = localStorage.getItem('gupymesa_user');
         if (!user) {
-            console.warn("⚠️ Acesso não autorizado. Redirecionando...");
+            console.warn("⚠️ Acesso negado. Redirecionando para login...");
             window.location.href = '/index.html';
             return null;
         }
