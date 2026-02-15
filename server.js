@@ -9,11 +9,13 @@ app.use(express.static('.'));
 const bqConfig = process.env.GOOGLE_CREDENTIALS 
     ? {
         projectId: 'gupymesa-487420',
-        credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
+        credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+        location: 'southamerica-east1'
       }
     : {
         keyFilename: path.join(__dirname, 'credentials.json'),
-        projectId: 'gupymesa-487420'
+        projectId: 'gupymesa-487420',
+        location: 'southamerica-east1'
       };
 
 const bq = new BigQuery(bqConfig);
@@ -21,13 +23,19 @@ const bq = new BigQuery(bqConfig);
 app.post('/api/login', async (req, res) => {
     const { id, senha } = req.body;
     try {
-        const query = `SELECT id, nome, cargo FROM \`gupymesa-487420.gupymesa.usuarios\` WHERE id = @id AND senha = @senha LIMIT 1`;
+        // ATENÇÃO AQUI: Mudamos 'gupymesa' para 'sistema_mesa'
+        const query = `
+            SELECT id, nome, cargo 
+            FROM \`gupymesa-487420.sistema_mesa.usuarios\` 
+            WHERE id = @id AND senha = @senha 
+            LIMIT 1`;
         
-        // Removemos a localização engessada para o Google detectar sozinho
-        const [rows] = await bq.query({ 
+        const options = { 
             query, 
+            location: 'southamerica-east1',
             params: { id: parseInt(id), senha: senha } 
-        });
+        };
+        const [rows] = await bq.query(options);
 
         if (rows.length > 0) {
             res.json({ sucesso: true, usuario: rows[0] });
@@ -41,4 +49,4 @@ app.post('/api/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log('Servidor em 8080'));
+app.listen(PORT, () => console.log('Servidor em 8080 - Dataset: sistema_mesa'));
