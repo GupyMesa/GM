@@ -1,4 +1,3 @@
-cat <<'EOF' > setup_db.js
 const { BigQuery } = require('@google-cloud/bigquery');
 const fs = require('fs');
 const path = require('path');
@@ -15,7 +14,7 @@ async function setup() {
     try {
         console.log("🛠️ Reorganizando banco de dados (Modo Batch - Free Tier)...");
         
-        // 1. Deleta a tabela antiga para resetar o esquema
+        // 1. Tentar deletar a tabela antiga para resetar o esquema
         try { 
             await bq.dataset(datasetId).table(tableId).delete(); 
             console.log("🗑️ Tabela antiga removida.");
@@ -23,7 +22,7 @@ async function setup() {
             console.log("ℹ️ Tabela não existia, criando nova.");
         }
 
-        // 2. Cria a tabela com as colunas corretas
+        // 2. Criar a tabela com as colunas corretas
         const [table] = await bq.dataset(datasetId).createTable(tableId, {
             schema: [
                 { name: 'id', type: 'INTEGER' },
@@ -34,7 +33,7 @@ async function setup() {
         });
         console.log("📋 Nova tabela 'usuarios' criada.");
 
-        // 3. Prepara os dados no formato NDJSON (exigido para o Load Job)
+        // 3. Prepara os dados do Super Admin + Planilha
         const usuarios = [{ id: 1, nome: 'Super Admin', cargo: 'Admin', senha: 'Admin123' }];
         
         if (fs.existsSync('Usuarios.csv')) {
@@ -49,7 +48,7 @@ async function setup() {
                         usuarios.push({
                             id: idVal,
                             nome: cols[1].trim(),
-                            cargo: cols[4].trim(),
+                            cargo: cols[4].trim(), // Coluna FUNÇÃO no CSV
                             senha: 'gupy123'
                         });
                     }
@@ -57,12 +56,12 @@ async function setup() {
             });
         }
 
-        // Converte o array para strings NDJSON (uma linha por objeto)
+        // Converte para NDJSON (exigido para carga gratuita no BigQuery)
         const ndjsonPath = path.join(__dirname, 'temp_usuarios.json');
         const ndjsonData = usuarios.map(u => JSON.stringify(u)).join('\n');
         fs.writeFileSync(ndjsonPath, ndjsonData);
 
-        // 4. Faz o carregamento via Load Job (Obrigatório para Free Tier)
+        // 4. Faz o carregamento (Batch Load)
         console.log(`📦 Carregando ${usuarios.length} usuários...`);
         await table.load(ndjsonPath, {
             sourceFormat: 'NEWLINE_DELIMITED_JSON',
@@ -70,10 +69,9 @@ async function setup() {
         });
 
         console.log("✅ SUCESSO! Banco de dados sincronizado.");
-        fs.unlinkSync(ndjsonPath); // Deleta arquivo temporário
+        if (fs.existsSync(ndjsonPath)) fs.unlinkSync(ndjsonPath);
     } catch (err) {
         console.error("❌ Erro no Setup:", err.message);
     }
 }
 setup();
-EOF
