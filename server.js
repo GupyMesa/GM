@@ -23,17 +23,17 @@ const bq = new BigQuery(bqConfig);
 app.post('/api/login', async (req, res) => {
     const { id, senha } = req.body;
     try {
-        // ATENÇÃO AQUI: Mudamos 'gupymesa' para 'sistema_mesa'
+        // Usamos CAST para garantir que o ID funcione sendo String ou Inteiro no banco
         const query = `
             SELECT id, nome, cargo 
             FROM \`gupymesa-487420.sistema_mesa.usuarios\` 
-            WHERE id = @id AND senha = @senha 
+            WHERE CAST(id AS STRING) = @id AND senha = @senha 
             LIMIT 1`;
         
         const options = { 
             query, 
             location: 'southamerica-east1',
-            params: { id: parseInt(id), senha: senha } 
+            params: { id: id.toString(), senha: senha } 
         };
         const [rows] = await bq.query(options);
 
@@ -43,10 +43,10 @@ app.post('/api/login', async (req, res) => {
             res.status(401).json({ sucesso: false, mensagem: 'ID ou Senha incorretos' });
         }
     } catch (error) {
-        console.error('ERRO:', error.message);
+        console.error('🔥 ERRO NO SERVIDOR:', error.message);
         res.status(500).json({ sucesso: false, mensagem: error.message });
     }
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log('Servidor em 8080 - Dataset: sistema_mesa'));
+app.listen(PORT, () => console.log('Servidor V13 pronto'));
