@@ -1,4 +1,4 @@
-cat <<EOF > server.js
+cat <<'EOF' > server.js
 const express = require('express');
 const { BigQuery } = require('@google-cloud/bigquery');
 const path = require('path');
@@ -16,11 +16,11 @@ const bq = new BigQuery({
 app.post('/api/login', async (req, res) => {
     const { id, senha } = req.body;
     try {
-        const query = \`
+        const query = `
             SELECT id, nome, cargo 
-            FROM \\\`gupymesa-487420.sistema_mesa.usuarios\\\` 
+            FROM \`gupymesa-487420.sistema_mesa.usuarios\` 
             WHERE id = @id AND senha = @senha 
-            LIMIT 1\`;
+            LIMIT 1`;
         
         const [rows] = await bq.query({ 
             query, 
@@ -33,10 +33,11 @@ app.post('/api/login', async (req, res) => {
             res.status(401).json({ sucesso: false, mensagem: 'ID ou Senha incorretos' });
         }
     } catch (error) {
+        console.error('Erro Login:', error.message);
         res.status(500).json({ sucesso: false, mensagem: error.message });
     }
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log('🚀 Sistema GupyMesa Reorganizado na porta ' + PORT));
+app.listen(PORT, () => console.log('🚀 GupyMesa rodando na porta ' + PORT));
 EOF
