@@ -8,8 +8,7 @@ export const UsuariosModule = {
         busca: '',
         contrato: '',
         funcao: '',
-        status: 'ATIVO', // Padrão
-        aberto: false    // Gaveta fechada
+        status: 'ATIVO' // Filtro padrão
     },
 
     async init(containerId) {
@@ -43,24 +42,15 @@ export const UsuariosModule = {
     },
 
     configurarFiltros() {
-        // Extrai opções únicas
         const contratos = [...new Set(this.dadosOriginais.map(u => u.contrato || 'CLT'))].filter(Boolean);
         const funcoes = [...new Set(this.dadosOriginais.map(u => u.cargo || 'Indefinido'))].filter(Boolean);
 
         // Envia configuração para o Manager atualizar o Submenu
         GestaoManager.updateToolbar({
-            ativo: this.estadoFiltros.aberto,
-            aberto: this.estadoFiltros.aberto,
             valoresAtuais: this.estadoFiltros,
             opcoes: { contratos, funcoes },
             
-            onToggle: (novoEstado) => {
-                this.estadoFiltros.aberto = novoEstado;
-                // Não precisa re-renderizar tudo, o CSS cuida da animação
-            },
-            
             onFiltrar: (novosValores) => {
-                // Atualiza estado e reaplica
                 this.estadoFiltros = { ...this.estadoFiltros, ...novosValores };
                 this.aplicarFiltros();
             }
